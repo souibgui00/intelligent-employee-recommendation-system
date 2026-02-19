@@ -1,3 +1,16 @@
+<p align="center">
+  <img src="esprit-logo.png" alt="ESPRIT Logo" width="400"/>
+</p>
+
+<p align="center">
+  <strong>École Supérieure Privée d'Ingénierie et de Technologies</strong><br>
+  Academic Year 2025-2026 • 4TWIN4 • ESPRIT
+</p>
+
+---
+
+# Intelligent Employee Recommendation System
+
 # Intelligent Employee Recommendation System
 
 An AI-powered system that automatically recommends the most suitable employees for training, projects, missions, certifications, and audits based on skills, experience, and contextual priorities.
