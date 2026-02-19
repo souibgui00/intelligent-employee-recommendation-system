@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="esprit-logo.png" alt="ESPRIT Logo" width="400"/>
+  <img src="714666.webp" alt="ESPRIT Logo" width="400"/>
 </p>
 
 <p align="center">
