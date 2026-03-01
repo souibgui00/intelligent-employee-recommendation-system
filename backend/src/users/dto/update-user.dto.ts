@@ -1,18 +1,17 @@
-import {
-  IsString,
-  IsEmail,
-  IsOptional,
-  IsDate,
-  IsBoolean,
-  IsEnum,
-} from 'class-validator';
-import { Types } from 'mongoose';
-import { Role } from '../../common/enums/role.enum';
+import { IsString, IsEmail, IsOptional, IsMongoId } from 'class-validator';
 
 export class UpdateUserDto {
   @IsOptional()
   @IsString()
   name?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  role?: string;
 
   @IsOptional()
   @IsString()
@@ -23,33 +22,33 @@ export class UpdateUserDto {
   telephone?: string;
 
   @IsOptional()
-  @IsEmail()
-  email?: string;
+  @IsString()
+  department_id?: string;
 
   @IsOptional()
   @IsString()
-  password?: string;
-
-  @IsOptional()
-  @IsDate()
-  date_embauche?: Date;
-
-  @IsOptional()
-  department_id?: Types.ObjectId;
-
-  @IsOptional()
-  manager_id?: Types.ObjectId;
-
-  @IsOptional()
-  @IsEnum(Role)
-  role?: Role;
+  date_embauche?: string;
 
   @IsOptional()
   @IsString()
   status?: string;
 
   @IsOptional()
-  @IsBoolean()
-  en_ligne?: boolean;
-}
+  @IsString()
+  avatar?: string;
 
+  @IsOptional()
+  @IsString()
+  position?: string;
+
+  @IsOptional()
+  @IsString()
+  jobDescription?: string;
+
+  @IsOptional()
+  @IsMongoId({ message: 'manager_id must be a valid MongoDB ID' })
+  manager_id?: string;
+
+  @IsOptional()
+  yearsOfExperience?: number;
+}
