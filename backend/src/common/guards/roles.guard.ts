@@ -13,7 +13,10 @@ export class RolesGuard implements CanActivate {
       context.getClass(),
     ]);
 
+<<<<<<< HEAD
     // If no roles are specified, allow access
+=======
+>>>>>>> feature/participation-history-tracking
     if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
@@ -22,6 +25,7 @@ export class RolesGuard implements CanActivate {
     const user = request.user;
 
     if (!user || !user.role) {
+<<<<<<< HEAD
       throw new ForbiddenException('User role not found');
     }
 
@@ -30,6 +34,25 @@ export class RolesGuard implements CanActivate {
     if (!hasRole) {
       throw new ForbiddenException(
         `Access denied. Required roles: ${requiredRoles.join(', ')}`,
+=======
+      console.error('[RolesGuard] User not found or role not defined', { user });
+      throw new ForbiddenException('User not found or role not defined');
+    }
+
+    const userRole = user.role.toUpperCase() as Role;
+    console.log(`[RolesGuard] Checking access - User role: ${userRole}, Required roles: ${requiredRoles.join(', ')}`);
+
+    // ADMIN has access to everything (role hierarchy)
+    if (userRole === Role.ADMIN) {
+      console.log('[RolesGuard] ADMIN user - access granted');
+      return true;
+    }
+
+    if (!requiredRoles.includes(userRole)) {
+      console.error(`[RolesGuard] Access denied - User role ${userRole} not in required roles`, { userRole, requiredRoles });
+      throw new ForbiddenException(
+        `Access denied. User role: ${userRole}. Required roles: ${requiredRoles.join(', ')}`,
+>>>>>>> feature/participation-history-tracking
       );
     }
 
