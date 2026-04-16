@@ -26,12 +26,12 @@ jobs:
 
       - name: Install Frontend
         run: |
-          cd "hr-activity-recommender (3)"
+          cd "frontend"
           npm ci
 
       - name: Build
         run: |
-          cd "hr-activity-recommender (3)"
+          cd "frontend"
           npm run build
 
       - name: Run tests
