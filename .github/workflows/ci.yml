@@ -22,6 +22,11 @@ jobs:
 
       - name: Install dependencies
         run: |
+          cd backend
+          npm run test
+
+      - name: Install Frontend
+        run: |
           cd "hr-activity-recommender (3)"
           npm install
 
