@@ -25,16 +25,16 @@ jobs:
           npm test
 
       - name: Install Frontend
-        run: |
-          cd "frontend"
-          npm ci
+  run: |
+    cd "frontend"
+    npm ci
 
-      - name: Build
-        run: |
-          cd "frontend"
-          npm run build
+- name: Build
+  run: |
+    cd "frontend"
+    npm run build
 
-      - name: Run tests
-        run: |
-          cd "frontend"
-          npm test
+- name: Run frontend tests
+  run: |
+    cd "frontend"
+    npm test
