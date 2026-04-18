@@ -2,8 +2,8 @@
 @import 'tw-animate-css';
 
 @theme inline {
-  --font-sans: 'Outfit', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Plus Jakarta Sans', 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Syne', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
   /* Maghrebia Brand Palette */
@@ -85,7 +85,7 @@
     font-feature-settings: "cv11", "ss01", "ss03";
   }
 
-  /* Typography Refinement - Montserrat for Titles, Inter for Body */
+  /* Typography system - Syne for headings, DM Sans for interface text */
   h1,
   h2,
   h3,
@@ -96,16 +96,12 @@
     font-weight: 700;
   }
 
-  /* Sentence-case visible UI text across the app shell */
-  body :is(h1, h2, h3, h4, h5, h6, p, span, button, label, a, li, th, td, option, summary, small, strong, em, dt, dd, legend, figcaption, caption, blockquote, div) {
-    text-transform: lowercase !important;
-  }
-
-  body :is(h1, h2, h3, h4, h5, h6, p, span, button, label, a, li, th, td, option, summary, small, strong, em, dt, dd, legend, figcaption, caption, blockquote, div)::first-letter {
+  /* Global all-caps presentation for UI copy */
+  body :is(h1, h2, h3, h4, h5, h6, p, span, button, label, a, li, th, td, option, summary, small, strong, em, dt, dd, legend, figcaption, caption, blockquote, div, input, textarea, select) {
     text-transform: uppercase !important;
   }
 
-  body :is(input, textarea, select, pre, code, kbd, samp, [contenteditable="true"]) {
+  body :is(pre, code, kbd, samp, [contenteditable="true"]) {
     text-transform: none !important;
   }
 
@@ -137,6 +133,14 @@
 }
 
 @layer components {
+
+  .font-heading {
+    font-family: var(--font-display);
+  }
+
+  .font-body {
+    font-family: var(--font-sans);
+  }
 
   /* Premium Cards */
   .card-premium {

@@ -45,15 +45,11 @@
 		margin-bottom: 0.85rem;
 	}
 
-	body :is(h1, h2, h3, h4, h5, h6, p, span, button, label, a, li, th, td, option, summary, small, strong, em, dt, dd, legend, figcaption, caption, blockquote, div) {
-		text-transform: lowercase !important;
-	}
-
-	body :is(h1, h2, h3, h4, h5, h6, p, span, button, label, a, li, th, td, option, summary, small, strong, em, dt, dd, legend, figcaption, caption, blockquote, div)::first-letter {
+	body :is(h1, h2, h3, h4, h5, h6, p, span, button, label, a, li, th, td, option, summary, small, strong, em, dt, dd, legend, figcaption, caption, blockquote, div, input, textarea, select) {
 		text-transform: uppercase !important;
 	}
 
-	body :is(input, textarea, select, pre, code, kbd, samp, [contenteditable="true"]) {
+	body :is(pre, code, kbd, samp, [contenteditable="true"]) {
 		text-transform: none !important;
 	}
 }
