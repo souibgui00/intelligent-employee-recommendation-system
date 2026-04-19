@@ -8,6 +8,8 @@ import { useData } from "@/lib/data-store"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { EmployeeProfile } from "@/components/employees/employee-profile"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { getInitials } from "@/lib/utils"
 
 export function EmployeeProfileRoutePage({ rolePrefix = "/admin", accentClass = "text-primary" }) {
   const navigate = useNavigate()
@@ -51,9 +53,12 @@ export function EmployeeProfileRoutePage({ rolePrefix = "/admin", accentClass = 
         <div className="px-8 md:px-14 -mt-16 md:-mt-20 relative z-10 pb-12">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-8">
             <div className="bg-white p-3 rounded-3xl shadow-mega inline-block ring-4 ring-slate-50/50">
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-slate-50 flex items-center justify-center text-4xl font-display text-slate-300 border-2 border-slate-100 shadow-inner">
-                {employee.name?.charAt(0)}
-              </div>
+              <Avatar className="w-24 h-24 md:w-32 md:h-32 rounded-3xl border-2 border-slate-100 shadow-inner bg-slate-50">
+                <AvatarImage src={employee.avatar} alt={employee.name || "Employee"} className="object-cover" />
+                <AvatarFallback className="text-4xl font-display text-slate-300 bg-slate-50">
+                  {getInitials(employee.name)}
+                </AvatarFallback>
+              </Avatar>
             </div>
           </div>
 
