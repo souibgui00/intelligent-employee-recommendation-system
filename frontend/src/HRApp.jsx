@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom"
 import HREmployeesPage from "../app/hr/employees/page"
-import HREmployeeProfilePage from "../app/hr/employees/profile-page"
 import HRActivitiesPage from "../app/hr/activities/page"
 import AdminRecommendationsPage from "../app/admin/recommendations/page"
 import AdminProfilePage from "../app/admin/profile/page"
@@ -25,7 +24,6 @@ export default function HRApp() {
       <Routes>
         <Route index element={<AdminDashboardPage />} />
         <Route path="employees" element={<HREmployeesPage />} />
-        <Route path="employees/:employeeId" element={<HREmployeeProfilePage />} />
         <Route path="employees/add" element={<AdminEmployeeAddPage />} />
         <Route path="employees/edit/:id" element={<AdminEmployeeEditPage />} />
         <Route path="activities" element={<HRActivitiesPage />} />

@@ -233,10 +233,10 @@ export default function UnifiedProfile() {
 
             {/* skill calibration dialog */}
             <Dialog open={evalDialog} onOpenChange={setEvalDialog}>
-                <DialogContent className="sm:max-w-sm rounded-2xl bg-white border border-slate-100 p-6 overflow-hidden shadow-xl">
-                    <DialogHeader className="text-left space-y-3">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-1">
-                            <Target className="w-5 h-5" />
+                <DialogContent className="sm:max-w-md rounded-[32px] bg-white border-none p-10 overflow-hidden shadow-2xl">
+                    <DialogHeader className="text-left space-y-4">
+                        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-2">
+                            <Target className="w-7 h-7" />
                         </div>
                         <DialogTitle className="text-xl font-display text-slate-900 tracking-tight">Skill Assessment</DialogTitle>
                         <DialogDescription className="text-slate-500 text-sm leading-relaxed">

@@ -1,13 +1,22 @@
 "use client"
 
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
 import { useData } from "@/lib/data-store"
 import { useAuth } from "@/lib/auth-context"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
+import {
+  Calendar,
   Clock,
   Users,
   CheckCircle2,
@@ -81,7 +90,7 @@ export default function EmployeeActivitiesPage() {
       awaiting_organizer: { label: "Completion Pending Review", cls: "bg-amber-50 text-amber-600" },
       organizer_submitted: { label: "Under Review", cls: "bg-violet-50 text-violet-600" },
       awaiting_manager: { label: "Awaiting Manager Approval", cls: "bg-sky-50 text-sky-600" },
-      validated: { label: "Validated", cls: "bg-emerald-100 text-emerald-700" },
+      validated: { label: "✓ Validated", cls: "bg-emerald-100 text-emerald-700" },
       withdrawn: { label: "Withdrawn", cls: "bg-rose-50 text-rose-400" },
     }
     const s = map[status]
@@ -138,61 +147,27 @@ export default function EmployeeActivitiesPage() {
           </div>
 
           {/* ── My Curriculum ── */}
-          <TabsContent value="enrolled" className="p-0 m-0 animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <ScrollArea className="max-h-[68vh] pr-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {enrolledActivities.length === 0 ? (
-                  <div className="col-span-full bg-white rounded-3xl border border-orange-100 py-20 text-center shadow-xl shadow-orange-900/5">
-                    <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Target className="w-8 h-8 text-orange-200" />
-                    </div>
-                    <h4 className="text-lg font-bold text-slate-900 mb-1">No active courses</h4>
-                    <p className="text-slate-500 text-xs max-w-xs mx-auto">Explore the catalog or wait for manager invitations.</p>
-                  </div>
-                ) : (
-                  enrolledActivities.map(activity => (
-                    <ActivityCard
-                      key={activity.id || activity._id}
-                      activity={activity}
-                      enrolled
-                      employeeId={employeeId}
-                      enrollEmployee={enrollEmployee}
-                      updateParticipationProgress={updateParticipationProgress}
-                      getStatusBadge={getStatusBadge}
-                      canWithdraw={WITHDRAWABLE_STATUSES.includes(activity.participation?.status)}
-                      onWithdraw={() => navigate(`/employee/activities/withdraw/${activity.id || activity._id}`)}
-                    />
-                  ))
-                )}
+          <TabsContent value="enrolled" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 p-0 m-0 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            {enrolledActivities.length === 0 ? (
+              <div className="col-span-full bg-white rounded-3xl border border-orange-100 py-20 text-center shadow-xl shadow-orange-900/5">
+                <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Target className="w-8 h-8 text-orange-200" />
+                </div>
+                <h4 className="text-lg font-bold text-slate-900 mb-1">No active courses</h4>
+                <p className="text-slate-500 text-xs max-w-xs mx-auto">Explore the catalog or wait for manager invitations.</p>
               </div>
             </ScrollArea>
           </TabsContent>
 
           {/* ── Invitations ── */}
-          <TabsContent value="invitations" className="p-0 m-0 animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <ScrollArea className="max-h-[68vh] pr-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {invitations.length === 0 ? (
-                  <div className="col-span-full bg-white rounded-3xl border border-orange-100 py-20 text-center shadow-xl shadow-orange-900/5">
-                    <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Zap className="w-8 h-8 text-orange-200" />
-                    </div>
-                    <h4 className="text-lg font-bold text-slate-900 mb-1">No active invitations</h4>
-                    <p className="text-slate-500 text-xs max-w-xs mx-auto">Managers will send you recommendations here when they identify a good fit for your career growth.</p>
-                  </div>
-                ) : (
-                  invitations.map(activity => (
-                    <ActivityCard
-                      key={activity.id || activity._id}
-                      activity={activity}
-                      invitation
-                      employeeId={employeeId}
-                      getStatusBadge={getStatusBadge}
-                      acceptInvitation={() => acceptRecommendation(activity.assignment.id)}
-                      rejectInvitation={() => rejectRecommendation(activity.assignment.id, "Declined by employee")}
-                    />
-                  ))
-                )}
+          <TabsContent value="invitations" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 p-0 m-0 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            {invitations.length === 0 ? (
+              <div className="col-span-full bg-white rounded-3xl border border-orange-100 py-20 text-center shadow-xl shadow-orange-900/5">
+                <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Zap className="w-8 h-8 text-orange-200" />
+                </div>
+                <h4 className="text-lg font-bold text-slate-900 mb-1">No active invitations</h4>
+                <p className="text-slate-500 text-xs max-w-xs mx-auto">Managers will send you recommendations here when they identify a good fit for your career growth.</p>
               </div>
             </ScrollArea>
           </TabsContent>
@@ -202,6 +177,56 @@ export default function EmployeeActivitiesPage() {
         </Tabs>
       </div>
 
+      {/* ── Withdrawal Modal ──────────────────────────────────────────────────── */}
+      <Dialog open={!!withdrawTarget} onOpenChange={(open) => { if (!open && !withdrawing) { setWithdrawTarget(null); setWithdrawReason("") } }}>
+        <DialogContent className="sm:max-w-md bg-white rounded-3xl border-none shadow-2xl">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-amber-500" />
+              </div>
+              <DialogTitle className="text-xl font-bold text-slate-900">Withdraw from Activity</DialogTitle>
+            </div>
+            <DialogDescription className="text-slate-500">
+              You are about to withdraw from <strong className="text-slate-700">"{withdrawTarget?.title}"</strong>. Your manager will be notified immediately. This action is logged in your history but will <strong>not</strong> affect your skill scores.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4 space-y-3">
+            <p className="text-[11px] font-black uppercase tracking-widest text-rose-500">
+              Reason for withdrawal <span className="text-rose-400">*</span>
+            </p>
+            <Textarea
+              placeholder="e.g., Schedule conflict due to an urgent project deadline, personal emergency, etc."
+              value={withdrawReason}
+              onChange={e => setWithdrawReason(e.target.value)}
+              className="min-h-27.5 bg-slate-50 border-slate-200 rounded-2xl p-4 text-sm resize-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300"
+            />
+            {withdrawReason.trim().length === 0 && withdrawReason.length > 0 && (
+              <p className="text-xs text-rose-500">Reason cannot be empty.</p>
+            )}
+          </div>
+
+          <DialogFooter className="flex gap-3">
+            <Button
+              variant="outline"
+              disabled={withdrawing}
+              onClick={() => { setWithdrawTarget(null); setWithdrawReason("") }}
+              className="flex-1 rounded-xl h-12 font-bold text-[10px] uppercase tracking-widest"
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={!withdrawReason.trim() || withdrawing}
+              onClick={handleWithdraw}
+              className="flex-1 bg-rose-500 hover:bg-rose-600 text-white rounded-xl h-12 font-bold text-[10px] uppercase tracking-widest"
+            >
+              {withdrawing ? <Loader2 className="w-3 h-3 animate-spin mr-2" /> : <LogOut className="w-3 h-3 mr-2" />}
+              Confirm Withdrawal
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

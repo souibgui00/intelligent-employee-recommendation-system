@@ -2,8 +2,8 @@
 @import 'tw-animate-css';
 
 @theme inline {
-  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Syne', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Outfit', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Outfit', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
   /* Maghrebia Brand Palette */
@@ -84,7 +84,7 @@
     font-feature-settings: "cv11", "ss01", "ss03";
   }
 
-  /* Typography Refinement - Syne for display, DM Sans for UI/body */
+  /* Typography Refinement - Montserrat for Titles, Inter for Body */
   h1,
   h2,
   h3,
@@ -126,25 +126,6 @@
     font-family: var(--font-display) !important;
     font-weight: 700 !important;
   }
-
-  /* Use DM Sans consistently for navigation links, badges, and all button labels */
-  a,
-  .nav-item,
-  button,
-  [role="button"],
-  [data-slot="button"],
-  [data-slot="badge"] {
-    font-family: var(--font-sans) !important;
-  }
-
-  :where([data-sonner-toaster]),
-  :where([data-sonner-toast]),
-  :where([data-sonner-toast]) * {
-    font-family: var(--font-sans) !important;
-  }
-}
-
-@layer components {
 
   /* Premium Cards */
   .card-premium {

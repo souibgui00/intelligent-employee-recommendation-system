@@ -9,7 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Search, Info, ClipboardCheck, TrendingUp, TrendingDown, Minus, Users } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Search, Info, ClipboardCheck, TrendingUp, TrendingDown, Minus, Users, Mail, Phone, Calendar as CalendarIcon, Briefcase } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export default function ManagerTeamPage() {

@@ -7,7 +7,6 @@ import ManagerAssignmentsPage from "../app/manager/assignments/page"
 import ManagerActivitiesPage from "../app/manager/activities/page"
 import ActivityDetailsView from "../app/manager/activities/ActivityDetailsView"
 import ActivityEnrollmentView from "../app/manager/activities/ActivityEnrollmentView"
-import ManagerTeamMemberPage from "../app/manager/team/member/page"
 import ManagerEvaluationsPage from "../app/manager/evaluations/page"
 import ManagerProfilePage from "../app/manager/profile/page"
 import ManagerValidationReportPage from "../app/manager/validation/[participationId]/page"
@@ -18,7 +17,6 @@ export default function ManagerApp() {
             <Routes>
                 <Route index element={<ManagerDashboardPage />} />
                 <Route path="employees" element={<ManagerTeamPage />} />
-                <Route path="employees/:employeeId" element={<ManagerTeamMemberPage />} />
                 <Route path="skills" element={<ManagerSkillsPage />} />
                 <Route path="assignments" element={<ManagerAssignmentsPage />} />
                 <Route path="activities" element={<ManagerActivitiesPage />} />

@@ -2,7 +2,6 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom"
 import AdminEmployeesPage from "../app/admin/employees/page"
 import AdminEmployeeAddPage from "../app/admin/employees/add-page"
 import AdminEmployeeEditPage from "../app/admin/employees/edit-page"
-import AdminEmployeeProfilePage from "../app/admin/employees/profile-page"
 import AdminRecommendationsPage from "../app/admin/recommendations/page"
 import AdminActivitiesPage from "../app/admin/activities/page"
 import AdminActivityAddPage from "../app/admin/activities/add-page"
@@ -28,7 +27,6 @@ export default function AdminApp() {
       <Routes>
         <Route index element={<AdminDashboardPage />} />
         <Route path="employees" element={<AdminEmployeesPage />} />
-        <Route path="employees/:employeeId" element={<AdminEmployeeProfilePage />} />
         <Route path="employees/add" element={<AdminEmployeeAddPage />} />
         <Route path="employees/edit/:id" element={<AdminEmployeeEditPage />} />
         <Route path="departments" element={<AdminDepartmentsPage />} />

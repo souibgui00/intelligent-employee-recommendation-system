@@ -87,7 +87,7 @@ export function StatsCards() {
             </CardHeader>
             <CardContent>
               <div className="flex items-baseline gap-3">
-                <span className="stat-number text-3xl text-slate-900 tracking-tighter">{stat.value}</span>
+                <span className="text-3xl font-black text-slate-900 tracking-tighter">{stat.value}</span>
                 {stat.change && (
                   <div className={cn(
                     "flex items-center gap-0.5 text-[9px] font-bold tracking-widest",
