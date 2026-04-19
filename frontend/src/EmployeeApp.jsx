@@ -1,41 +1,33 @@
 import { Routes, Route, Navigate } from "react-router-dom"
-import { useMemo, useEffect, useState, lazy, Suspense } from "react"
+import { useMemo, useEffect, useState } from "react"
 import { Trophy, TrendingUp, CheckCircle2, Loader2, Star } from "lucide-react"
 
-const EmployeeHome = lazy(() => import("../app/employee/page"))
-const EmployeeActivitiesPage = lazy(() => import("../app/employee/activities/page"))
-const EmployeeRecommendationsPage = lazy(() => import("../app/employee/recommendations/page"))
-const EmployeeProfilePage = lazy(() => import("../app/employee/profile/page"))
-const EmployeeHubPage = lazy(() => import("../app/employee/hub/page"))
+import EmployeeHome from "../app/employee/page"
+import EmployeeActivitiesPage from "../app/employee/activities/page"
+import EmployeeWithdrawPage from "../app/employee/activities/withdraw/page"
+import EmployeeRecommendationsPage from "../app/employee/recommendations/page"
+import EmployeeProfilePage from "../app/employee/profile/page"
+import EmployeeHubPage from "../app/employee/hub/page"
 
-import { PortalLayout } from "../components/PortalLayout"
-import { Badge } from "../components/ui/badge"
-import { useData } from "../lib/data-store"
-import { useAuth } from "../lib/auth-context"
+import { PortalLayout } from "@/components/PortalLayout"
+import { Badge } from "@/components/ui/badge"
+import { useData } from "@/lib/data-store"
+import { useAuth } from "@/lib/auth-context"
 
 export default function EmployeeApp() {
   return (
     <PortalLayout role="employee">
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route index element={<EmployeeHome />} />
-          <Route path="hub" element={<EmployeeHubPage />} />
-          <Route path="activities" element={<EmployeeActivitiesPage />} />
-          <Route path="recommendations" element={<EmployeeRecommendationsPage />} />
-          <Route path="profile" element={<EmployeeProfilePage />} />
-          <Route path="progress" element={<EmployeeProgress />} />
-          <Route path="*" element={<Navigate to="/employee" replace />} />
-        </Routes>
-      </Suspense>
+      <Routes>
+        <Route index element={<EmployeeHome />} />
+        <Route path="hub" element={<EmployeeHubPage />} />
+        <Route path="activities" element={<EmployeeActivitiesPage />} />
+        <Route path="activities/withdraw/:activityId" element={<EmployeeWithdrawPage />} />
+        <Route path="recommendations" element={<EmployeeRecommendationsPage />} />
+        <Route path="profile" element={<EmployeeProfilePage />} />
+        <Route path="progress" element={<EmployeeProgress />} />
+        <Route path="*" element={<Navigate to="/employee" replace />} />
+      </Routes>
     </PortalLayout>
-  )
-}
-
-function PageLoader() {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Loader2 className="w-10 h-10 text-orange-500 animate-spin" />
-    </div>
   )
 }
 
@@ -95,11 +87,11 @@ function EmployeeProgress() {
           
           <div className="flex gap-6">
             <div className="glass-dark px-10 py-6 rounded-3xl border-white/5 text-center">
-              <p className="text-primary text-3xl font-black tracking-tighter">{stats.badges}</p>
+              <p className="stat-number text-primary text-3xl tracking-tighter">{stats.badges}</p>
               <p className="text-[10px] text-white/30 font-bold tracking-widest mt-1">Badges</p>
             </div>
             <div className="glass-dark px-10 py-6 rounded-3xl border-white/5 text-center">
-              <p className="text-white text-3xl font-black tracking-tighter">{stats.points}</p>
+              <p className="stat-number text-white text-3xl tracking-tighter">{stats.points}</p>
               <p className="text-[10px] text-white/30 font-bold tracking-widest mt-1">Combined score</p>
             </div>
           </div>

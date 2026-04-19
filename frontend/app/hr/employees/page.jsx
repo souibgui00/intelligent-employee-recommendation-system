@@ -1,24 +1,22 @@
 "use client"
 
 import { useState } from "react"
-import { useData } from "/lib/data-store"
-import { DashboardHeader } from "/components/dashboard/header"
-import { EmployeeTable } from "/components/employees/employee-table"
-import { cn } from "/lib/utils"
+import { useData } from "@/lib/data-store"
+import { DashboardHeader } from "@/components/dashboard/header"
+import { EmployeeTable } from "@/components/employees/employee-table"
+import { cn } from "@/lib/utils"
 
 import { Search, Plus, Filter, Check } from "lucide-react"
-import { Button } from "/components/ui/button"
-import { useAuth } from "/lib/auth-context"
+import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "/components/ui/popover"
+} from "@/components/ui/popover"
 
 export default function HREmployeesPage() {
   const { employees } = useData()
-  const { user } = useAuth()
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState("score-desc")
@@ -34,12 +32,6 @@ export default function HREmployeesPage() {
     setRoleFilter("all")
     setManagerFilter("all")
   }
-
-    const handleSelectEmployee = (employee) => {
-        const employeeId = employee?.id || employee?._id
-        if (!employeeId) return
-        navigate(`/hr/employees/profile/${employeeId}`)
-    }
 
   return (
     <div className="flex flex-col bg-[#F8FAFC] min-h-screen page-transition text-slate-600">
@@ -90,8 +82,8 @@ export default function HREmployeesPage() {
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Sort by</label>
                                 <div className="flex flex-col gap-3">
                                     {[
-                                        { id: "score-desc", label: "Top Mastery First " },
-                                        { id: "score-asc", label: "Needs Training " }
+                                        { id: "score-desc", label: "Top Mastery First" },
+                                        { id: "score-asc", label: "Needs Training" }
                                     ].map(opt => (
                                         <button 
                                             key={opt.id}
@@ -143,7 +135,7 @@ export default function HREmployeesPage() {
 
         <div className="bg-white border-2 border-slate-50 rounded-[4rem] shadow-premium overflow-hidden min-h-162.5 pt-4 p-4 animate-in slide-in-from-bottom-5 duration-1000">
             <EmployeeTable 
-                onSelectEmployee={handleSelectEmployee}
+                onSelectEmployee={(employee) => navigate(`/hr/employees/${employee.id || employee._id}`)}
                 externalSearch={searchQuery}
                 sortBy={sortBy}
                 deptFilter={deptFilter}

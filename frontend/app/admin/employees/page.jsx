@@ -1,20 +1,20 @@
 "use client"
 
 import { useState } from "react"
-import { useData } from "/lib/data-store"
-import { DashboardHeader } from "/components/dashboard/header"
-import { EmployeeTable } from "/components/employees/employee-table"
-import { cn } from "/lib/utils"
+import { useData } from "@/lib/data-store"
+import { DashboardHeader } from "@/components/dashboard/header"
+import { EmployeeTable } from "@/components/employees/employee-table"
+import { cn } from "@/lib/utils"
 
-import { Search, Plus, Filter, Check, Edit3 } from "lucide-react"
-import { Button } from "/components/ui/button"
-import { useAuth } from "/lib/auth-context"
+import { Search, Plus, Filter, Check } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useAuth } from "@/lib/auth-context"
 import { useNavigate } from "react-router-dom"
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "/components/ui/popover"
+} from "@/components/ui/popover"
 
 export default function AdminEmployeesPage() {
   const { employees } = useData()
@@ -27,12 +27,6 @@ export default function AdminEmployeesPage() {
   const [managerFilter, setManagerFilter] = useState("all")
 
   const rolePrefix = user?.role?.toLowerCase() === "hr" ? "/hr" : "/admin"
-
-    const handleSelectEmployee = (employee) => {
-        const employeeId = employee?.id || employee?._id
-        if (!employeeId) return
-        navigate(`${rolePrefix}/employees/profile/${employeeId}`)
-    }
 
   const uniqueDepts = Array.from(new Set(employees?.map(e => e.department).filter(Boolean)))
   const activeFiltersCount = [deptFilter, roleFilter, managerFilter].filter(f => f !== "all").length
@@ -89,8 +83,8 @@ export default function AdminEmployeesPage() {
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mastery Sort</label>
                                 <div className="flex flex-col gap-3">
                                     {[
-                                        { id: "score-desc", label: "Top Mastery First " },
-                                        { id: "score-asc", label: "Needs Training " }
+                                        { id: "score-desc", label: "Top Mastery First" },
+                                        { id: "score-asc", label: "Needs Training" }
                                     ].map(opt => (
                                         <button 
                                             key={opt.id}
@@ -142,7 +136,7 @@ export default function AdminEmployeesPage() {
 
         <div className="bg-white border-2 border-slate-50 rounded-[4rem] shadow-premium overflow-hidden min-h-162.5 pt-4 p-4 animate-in slide-in-from-bottom-5 duration-1000">
             <EmployeeTable 
-                onSelectEmployee={handleSelectEmployee}
+                onSelectEmployee={(employee) => navigate(`${rolePrefix}/employees/${employee.id || employee._id}`)}
                 externalSearch={searchQuery}
                 sortBy={sortBy}
                 deptFilter={deptFilter}

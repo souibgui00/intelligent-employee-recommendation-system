@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
-import React, { useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "../lib/auth-context"
 import { API_URL } from "../lib/api"
 import {
@@ -121,14 +121,14 @@ function LoginForm() {
 
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4 lg:p-6 relative overflow-hidden">
+        <div className="min-h-screen flex items-center justify-center bg-[#E5E5E5] p-4 lg:p-6 relative overflow-hidden">
             {/* Maghrebia Background Accents */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] bg-primary/10 rounded-full blur-[120px] animate-pulse"></div>
-                <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-accent-blue/5 rounded-full blur-[120px]"></div>
+                <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] bg-[#F28C1B]/[0.1] rounded-full blur-[120px] animate-pulse"></div>
+                <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#1E5FA8]/[0.05] rounded-full blur-[120px]"></div>
             </div>
 
-            <div className="w-full max-w-275 grid lg:grid-cols-2 bg-white rounded-3xl border border-slate-200/60 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.15)] overflow-hidden relative z-10 animate-in fade-in zoom-in-95 duration-1000">
+            <div className="w-full max-w-[1100px] grid lg:grid-cols-2 bg-white rounded-3xl border border-slate-200/60 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.15)] overflow-hidden relative z-10 animate-in fade-in zoom-in-95 duration-1000">
                 {/* Left Side: Maghrebia Branding */}
                 <div className="hidden lg:flex flex-col justify-between p-16 bg-[#2C2C2C] relative overflow-hidden group">
                     {/* Abstract Decorative Elements */}

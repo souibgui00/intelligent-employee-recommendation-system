@@ -73,7 +73,7 @@ function StatCard({ label, value, icon: Icon, color, trend }) {
   }
 
   return (
-    <div className="bg-white border-2 border-slate-50 rounded-[3rem] p-10 shadow-premium group hover:-translate-y-2.5 transition-all duration-700 overflow-hidden relative">
+    <div className="bg-white border-2 border-slate-50 rounded-[3rem] p-10 shadow-premium group hover:translate-y-[-10px] transition-all duration-700 overflow-hidden relative">
       <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50/50 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-1000"></div>
       
       <div className="relative z-10 flex flex-col h-full justify-between gap-8">
@@ -215,7 +215,7 @@ export default function AdminActivitiesPage() {
     <div className="flex flex-col bg-[#F8FAFC] min-h-screen text-slate-600">
       <DashboardHeader title="Activities" description="Manage your training programs, workshops, and sessions." />
 
-      <div className="flex-1 p-6 md:p-10 max-w-350 mx-auto w-full animate-in fade-in duration-700 space-y-12">
+      <div className="flex-1 p-6 md:p-10 max-w-[1400px] mx-auto w-full animate-in fade-in duration-700 space-y-12">
           
 
         {/* Global Toolbar */}
@@ -227,7 +227,7 @@ export default function AdminActivitiesPage() {
                   placeholder="SEARCH ACTIVITIES..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-16 pr-6 h-16 bg-white border-2 border-slate-50 rounded-4xl text-[11px] font-black tracking-[0.2em] text-slate-950 placeholder:text-slate-300 focus:outline-none focus:border-primary/20 shadow-premium transition-all uppercase"
+                  className="w-full pl-16 pr-6 h-16 bg-white border-2 border-slate-50 rounded-[2rem] text-[11px] font-black tracking-[0.2em] text-slate-950 placeholder:text-slate-300 focus:outline-none focus:border-primary/20 shadow-premium transition-all uppercase"
               />
           </div>
 
@@ -237,7 +237,7 @@ export default function AdminActivitiesPage() {
                       <Button 
                           variant="outline"
                           className={cn(
-                              "h-16 px-8 rounded-4xl font-black text-[11px] tracking-widest uppercase transition-all shadow-premium gap-4 border-2 border-slate-50",
+                              "h-16 px-8 rounded-[2rem] font-black text-[11px] tracking-widest uppercase transition-all shadow-premium gap-4 border-2 border-slate-50",
                               activeFiltersCount > 0 ? "bg-primary/5 border-primary/20 text-primary" : "bg-white text-slate-900 hover:bg-slate-50"
                           )}
                       >
@@ -245,7 +245,7 @@ export default function AdminActivitiesPage() {
                           {activeFiltersCount > 0 ? `Filters (${activeFiltersCount})` : "Configure"}
                       </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-100 p-10 bg-white border-none rounded-[3.5rem] shadow-mega space-y-10 mt-6 animate-in fade-in slide-in-from-top-4" align="end">
+                  <PopoverContent className="w-[400px] p-10 bg-white border-none rounded-[3.5rem] shadow-mega space-y-10 mt-6 animate-in fade-in slide-in-from-top-4" align="end">
                       <div className="space-y-10">
                           <div className="flex items-center justify-between border-b border-slate-50 pb-6">
                               <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-widest">Filters</h4>
@@ -261,7 +261,7 @@ export default function AdminActivitiesPage() {
                                   <SelectTrigger className="h-16 rounded-[1.5rem] border-2 border-slate-50 bg-slate-50/50 font-black text-[10px] uppercase tracking-widest focus:ring-primary/20">
                                     <SelectValue placeholder="All Status" />
                                   </SelectTrigger>
-                                  <SelectContent className="rounded-4xl border-none shadow-2xl p-2">
+                                  <SelectContent className="rounded-[2rem] border-none shadow-2xl p-2">
                                     <SelectItem value="all" className="rounded-xl py-4 font-black uppercase text-[9px] tracking-widest mb-1">All Activities</SelectItem>
                                     <SelectItem value="active" className="rounded-xl py-4 font-black uppercase text-[9px] tracking-widest mb-1">Active</SelectItem>
                                     <SelectItem value="upcoming" className="rounded-xl py-4 font-black uppercase text-[9px] tracking-widest mb-1">Upcoming</SelectItem>
@@ -276,7 +276,7 @@ export default function AdminActivitiesPage() {
                                   <SelectTrigger className="h-16 rounded-[1.5rem] border-2 border-slate-50 bg-slate-50/50 font-black text-[10px] uppercase tracking-widest focus:ring-primary/20">
                                     <SelectValue placeholder="All Categories" />
                                   </SelectTrigger>
-                                  <SelectContent className="rounded-4xl border-none shadow-2xl p-2">
+                                  <SelectContent className="rounded-[2rem] border-none shadow-2xl p-2">
                                     <SelectItem value="all" className="rounded-xl py-4 font-black uppercase text-[9px] tracking-widest mb-1">All Categories</SelectItem>
                                     <SelectItem value="training" className="rounded-xl py-4 font-black uppercase text-[9px] tracking-widest mb-1">Training</SelectItem>
                                     <SelectItem value="workshop" className="rounded-xl py-4 font-black uppercase text-[9px] tracking-widest mb-1">Workshop</SelectItem>
@@ -297,7 +297,7 @@ export default function AdminActivitiesPage() {
               </Popover>
 
               <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="h-16 w-60 px-8 rounded-4xl bg-white border-2 border-slate-50 shadow-premium hover:bg-slate-50 transition-all font-black text-[11px] uppercase tracking-widest text-slate-900 focus:ring-primary/20">
+                  <SelectTrigger className="h-16 w-[240px] px-8 rounded-[2rem] bg-white border-2 border-slate-50 shadow-premium hover:bg-slate-50 transition-all font-black text-[11px] uppercase tracking-widest text-slate-900 focus:ring-primary/20">
                       <div className="flex items-center gap-4">
                         <ArrowUpDown className="h-5 w-5 text-primary" />
                         <SelectValue placeholder="Sort" />
@@ -312,7 +312,7 @@ export default function AdminActivitiesPage() {
 
               <Button
                   onClick={handleCreateActivity}
-                  className="bg-slate-950 hover:bg-primary text-white h-16 px-10 rounded-4xl font-black text-[12px] tracking-widest uppercase transition-all shadow-xl active:scale-95 flex items-center gap-4"
+                  className="bg-slate-950 hover:bg-primary text-white h-16 px-10 rounded-[2rem] font-black text-[12px] tracking-widest uppercase transition-all shadow-xl active:scale-95 flex items-center gap-4"
               >
                   <Plus className="h-5 w-5" />
                   New Activity
@@ -378,10 +378,10 @@ export default function AdminActivitiesPage() {
                   </div>
 
                   <div className="flex gap-4 pt-12">
-                     <Button className="flex-1 h-18 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[12px] tracking-[0.2em] uppercase rounded-4xl shadow-2xl shadow-emerald-600/30 active:scale-95 transition-all" onClick={() => handleApproveRequest(request._id)}>
+                     <Button className="flex-1 h-18 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[12px] tracking-[0.2em] uppercase rounded-[2rem] shadow-2xl shadow-emerald-600/30 active:scale-95 transition-all" onClick={() => handleApproveRequest(request._id)}>
                         Approve
                      </Button>
-                     <Button variant="outline" className="flex-1 h-18 border-2 border-rose-100 text-rose-500 font-black text-[12px] tracking-[0.2em] uppercase rounded-4xl hover:bg-rose-50 active:scale-95 transition-all" onClick={() => handleRejectRequest(request)}>
+                     <Button variant="outline" className="flex-1 h-18 border-2 border-rose-100 text-rose-500 font-black text-[12px] tracking-[0.2em] uppercase rounded-[2rem] hover:bg-rose-50 active:scale-95 transition-all" onClick={() => handleRejectRequest(request)}>
                         Reject
                      </Button>
                   </div>
@@ -405,7 +405,7 @@ export default function AdminActivitiesPage() {
                         placeholder="TYPE THE REASON FOR REJECTION HERE..." 
                         value={reviewReason} 
                         onChange={(e) => setReviewReason(e.target.value)} 
-                        className="min-h-55 rounded-[2.5rem] p-10 border-2 border-slate-50 bg-slate-50/50 text-sm font-bold placeholder:text-[10px] placeholder:font-black placeholder:tracking-[0.2em] focus:bg-white focus:border-rose-200 transition-all shadow-inner no-scrollbar" 
+                        className="min-h-[220px] rounded-[2.5rem] p-10 border-2 border-slate-50 bg-slate-50/50 text-sm font-bold placeholder:text-[10px] placeholder:font-black placeholder:tracking-[0.2em] focus:bg-white focus:border-rose-200 transition-all shadow-inner no-scrollbar" 
                     />
 
                     <div className="flex flex-col md:flex-row gap-6 pt-6">
