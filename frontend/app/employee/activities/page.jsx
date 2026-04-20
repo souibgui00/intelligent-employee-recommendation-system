@@ -40,7 +40,6 @@ const ACTIVE_STATUSES = ['started', 'completed', 'accepted', 'in_progress', 'awa
 const WITHDRAWABLE_STATUSES = ['accepted', 'in_progress']
 
 export default function EmployeeActivitiesPage() {
-  const navigate = useNavigate()
   const {
     activities,
     participations,
