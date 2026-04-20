@@ -226,10 +226,10 @@ export default function AdminAnalyticsPage() {
 
                 <div className="w-full space-y-4 pt-10">
                     {analytics.pieData.map((item, i) => (
-                        <div key={i} className="flex items-center justify-between bg-slate-50/50 p-4 rounded-2xl border border-slate-50/50">
-                            <div className="flex items-center gap-3">
-                                <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
-                                <span className="text-[10px] font-black text-slate-600 uppercase tracking-tight">{item.name}</span>
+                        <div key={i} className="flex items-center justify-between bg-slate-50/50 p-2.5 rounded-lg border border-slate-50/50">
+                            <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full shadow-sm" style={{ backgroundColor: COLORS[i % COLORS.length] }}></div>
+                                <span className="text-[8px] font-black text-slate-600 uppercase tracking-tight">{item.name}</span>
                             </div>
                             <span className="text-sm font-black text-slate-900">{item.value}</span>
                         </div>
