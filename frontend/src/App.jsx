@@ -602,6 +602,7 @@ function ProtectedRoute({ children, requiredRole }) {
 
 function AppContent() {
     const { isAuthenticated, user, isLoading } = useAuth()
+    const normalizedUserRole = (user?.role || 'employee').toString().toLowerCase().trim()
 
     // Detect OAuth callback before rendering routes (so we don't get redirected to /login and lose the hash)
     // MOVED TO TOP: Must call all hooks unconditionally, before any early returns
@@ -712,14 +713,14 @@ function AppContent() {
                 />
                 <Route path="/" element={
                     isAuthenticated && user
-                        ? <Navigate to={`/${user.role}`} replace />
+                        ? <Navigate to={`/${normalizedUserRole}`} replace />
                         : <Navigate to="/login" replace />
                 } />
                 <Route
                     path="*"
                     element={
                         isAuthenticated && user
-                            ? <Navigate to={`/${user.role}`} replace />
+                            ? <Navigate to={`/${normalizedUserRole}`} replace />
                             : <Navigate to="/login" replace />
                     }
                 />

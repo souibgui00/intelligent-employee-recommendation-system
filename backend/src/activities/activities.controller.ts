@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards, Patch, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards, Patch, Req, Query } from '@nestjs/common';
 import { ActivitiesService } from './activities.service';
 import { CreateActivityDto, UpdateActivityDto } from './dto/activity.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -38,6 +38,13 @@ export class ActivitiesController {
     @Get('pending')
     findPending() {
         return this.activitiesService.findPending();
+    }
+
+    @Roles(Role.ADMIN, Role.HR, Role.MANAGER)
+    @Get('recommendation-eligible')
+    findRecommendationEligible(@Query('includeCompleted') includeCompleted?: string) {
+        const include = String(includeCompleted || '').toLowerCase() === 'true';
+        return this.activitiesService.findRecommendationEligible(include);
     }
 
     @Post('extract-skills')
@@ -130,7 +137,10 @@ export class ActivitiesController {
 
     @Roles(Role.ADMIN, Role.MANAGER, Role.HR)
     @Get(':activityId/recommendations')
-    getRecommendationsForActivity(@Param('activityId') activityId: string) {
-        return this.activitiesService.getRecommendationsForActivity(activityId);
+    getRecommendationsForActivity(
+        @Param('activityId') activityId: string,
+        @Query('prompt') prompt?: string,
+    ) {
+        return this.activitiesService.getRecommendationsForActivity(activityId, prompt);
     }
 }
