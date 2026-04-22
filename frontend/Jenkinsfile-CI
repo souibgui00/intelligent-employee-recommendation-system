@@ -1,0 +1,70 @@
+pipeline {
+    agent any
+
+    tools {
+        nodejs 'NodeJS-20'
+    }
+
+    stages {
+
+        stage('📥 Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('📦 Install') {
+            steps {
+                dir('frontend') {
+                    sh 'npm install'
+                }
+            }
+        }
+
+        stage('🧪 Tests') {
+            steps {
+                dir('frontend') {
+                    sh 'npm test -- --watchAll=false --coverage'
+                }
+            }
+        }
+
+        stage('🏗️ Build') {
+            steps {
+                dir('frontend') {
+                    sh 'npm run build'
+                }
+            }
+        }
+
+        stage('🔍 SonarQube') {
+            steps {
+                dir('frontend') {
+                    withSonarQubeEnv('SonarQube') {
+                        sh '''
+                            npx sonar-scanner \
+                              -Dsonar.projectKey=frontend \
+                              -Dsonar.sources=src \
+                              -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('🐳 Docker Build') {
+            steps {
+                dir('frontend') {
+                    sh 'docker build -t mon-frontend:${BUILD_NUMBER} .'
+                    sh 'docker tag mon-frontend:${BUILD_NUMBER} mon-frontend:latest'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            build job: 'CD-Frontend', wait: false
+        }
+    }
+}

@@ -1,0 +1,87 @@
+pipeline {
+    agent any
+
+    tools {
+        nodejs 'NodeJS-20'  // Nom configuré dans Jenkins
+    }
+
+    environment {
+        SONAR_TOKEN = credentials('sonar-token')  // Créé dans Jenkins Credentials
+    }
+
+    stages {
+
+        stage('📥 Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('📦 Install Dependencies') {
+            steps {
+                dir('backend') {
+                    sh 'npm install'
+                }
+            }
+        }
+
+        stage('🧪 Unit Tests') {
+            steps {
+                dir('backend') {
+                    sh 'npm test -- --coverage'
+                }
+            }
+            post {
+                always {
+                    // Publier les résultats de tests dans Jenkins
+                    junit 'backend/coverage/junit.xml'
+                }
+            }
+        }
+
+        stage('🔍 SonarQube Analysis') {
+            steps {
+                dir('backend') {
+                    withSonarQubeEnv('SonarQube') {
+                        sh '''
+                            npx sonar-scanner \
+                              -Dsonar.projectKey=backend \
+                              -Dsonar.sources=src \
+                              -Dsonar.tests=src \
+                              -Dsonar.test.inclusions=**/*.spec.ts \
+                              -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('✅ Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('🐳 Build Docker Image') {
+            steps {
+                dir('backend') {
+                    sh 'docker build -t mon-backend:${BUILD_NUMBER} .'
+                    sh 'docker tag mon-backend:${BUILD_NUMBER} mon-backend:latest'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ CI Backend réussi !'
+            // Déclencher le pipeline CD automatiquement
+            build job: 'CD-Backend', wait: false
+        }
+        failure {
+            echo '❌ CI Backend échoué !'
+        }
+    }
+}

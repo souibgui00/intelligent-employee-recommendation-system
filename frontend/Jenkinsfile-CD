@@ -1,0 +1,28 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('🚀 Deploy Frontend') {
+            steps {
+                sh '''
+                    kubectl apply -f k8s/frontend-deployment.yaml
+                    kubectl apply -f k8s/frontend-service.yaml
+                    kubectl rollout status deployment/frontend-deployment
+                '''
+            }
+        }
+
+        stage('🔎 Verify') {
+            steps {
+                sh 'kubectl get pods -l app=frontend'
+            }
+        }
+    }
+
+    post {
+        failure {
+            sh 'kubectl rollout undo deployment/frontend-deployment'
+        }
+    }
+}
