@@ -1,20 +1,16 @@
 pipeline {
     agent any
-
     environment {
         PATH = "/usr/bin:/usr/local/bin:${env.PATH}"
     }
-
     stages {
-
-        stage('📥 Checkout') {
+        stage('Checkout') {
             steps {
                 checkout scm
-                echo '✅ Code récupéré !'
+                echo 'Code recupere !'
             }
         }
-
-        stage('🔍 Vérifier environnement') {
+        stage('Verifier environnement') {
             steps {
                 sh '''
                     which node
@@ -23,8 +19,7 @@ pipeline {
                 '''
             }
         }
-
-        stage('📦 Install') {
+        stage('Install') {
             steps {
                 dir('backend') {
                     sh '''
@@ -34,28 +29,25 @@ pipeline {
                 }
             }
         }
-
-        stage('🧪 Tests') {
+        stage('Tests') {
             steps {
                 dir('backend') {
                     sh '/usr/bin/npm test || true'
                 }
             }
         }
-stage('SonarQube Analysis') {
-    steps {
-        dir('backend') {
-            sh '''/opt/sonar-scanner/bin/sonar-scanner \
-                -Dsonar.projectKey=backend \
-                -Dsonar.sources=. \
-                -Dsonar.host.url=http://localhost:9000 \
-                -Dsonar.login=squ_3d6dafbfa457121e6e3178b7c500ad6cdacf1ba6'''
+        stage('SonarQube Analysis') {
+            steps {
+                dir('backend') {
+                    sh '''/opt/sonar-scanner/bin/sonar-scanner \
+                        -Dsonar.projectKey=backend \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=http://localhost:9000 \
+                        -Dsonar.login=squ_3d6dafbfa457121e6e3178b7c500ad6cdacf1ba6'''
+                }
+            }
         }
-    }
-}
-        }
-
-        stage('🐳 Docker Build') {
+        stage('Docker Build') {
             steps {
                 dir('backend') {
                     sh 'docker build -t mon-backend:latest .'
@@ -63,14 +55,13 @@ stage('SonarQube Analysis') {
             }
         }
     }
-
     post {
         success {
-            echo '✅ CI Backend réussi !'
+            echo 'CI Backend reussi !'
             build job: 'CD-Backend', wait: false
         }
         failure {
-            echo '❌ CI Backend échoué !'
+            echo 'CI Backend echoue !'
         }
     }
 }
