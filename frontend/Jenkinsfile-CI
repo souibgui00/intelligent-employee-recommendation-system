@@ -33,12 +33,12 @@ pipeline {
         }
 
         stage('🏗️ Build') {
-            steps {
-                dir('frontend') {
-                    sh 'npm run build'
-                }
-            }
+    steps {
+        dir('frontend') {
+            sh 'npx vite build'
         }
+    }
+}
 
         stage('SonarQube Analysis') {
             steps {
