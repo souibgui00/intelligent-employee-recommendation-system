@@ -56,12 +56,12 @@ pipeline {
         }
     }
     post {
-        success {
-            echo 'CI Backend reussi !'
-            build job: 'CD-Backend', wait: false
-        }
-        failure {
-            echo 'CI Backend echoue !'
-        }
+    success {
+        echo '✅ CI Backend réussi !'
+        build job: 'CD-Backend', wait: false
     }
+    failure {
+        echo '❌ CI Backend échoué !'
+    }
+}
 }
