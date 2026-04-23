@@ -17,7 +17,7 @@ pipeline {
     steps {
         dir('frontend') {
             retry(3) {
-                sh 'npm install --prefer-offline'
+                sh 'npm install --prefer-offline --fetch-timeout=600000'
             }
         }
     }
