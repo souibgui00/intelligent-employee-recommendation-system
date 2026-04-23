@@ -3,26 +3,31 @@ pipeline {
 
     stages {
 
-        stage('🚀 Deploy Frontend') {
+        stage('Deploy Backend') {
             steps {
-                sh '''
-                    kubectl apply -f k8s/frontend-deployment.yaml
-                    kubectl apply -f k8s/frontend-service.yaml
-                    kubectl rollout status deployment/frontend-deployment
-                '''
+                dir('backend') {
+                    sh '''
+                        kubectl apply -f k8s/backend-deployment.yaml
+                        kubectl rollout status deployment/backend-deployment
+                    '''
+                }
             }
         }
 
-        stage('🔎 Verify') {
+        stage('Verify') {
             steps {
-                sh 'kubectl get pods -l app=frontend'
+                sh 'kubectl get pods -l app=backend'
             }
         }
     }
 
     post {
+        success {
+            echo 'CD Backend reussi !'
+        }
         failure {
-            sh 'kubectl rollout undo deployment/frontend-deployment'
+            echo 'CD Backend echoue !'
+            sh 'kubectl rollout undo deployment/backend-deployment'
         }
     }
 }
