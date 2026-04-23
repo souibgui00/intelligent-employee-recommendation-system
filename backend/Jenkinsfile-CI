@@ -43,15 +43,17 @@ pipeline {
             }
         }
 
-         stage('SonarQube') {
-            steps {
-                dir('backend') {
-                    withSonarQubeEnv('SonarQube') {
-                        sh '/opt/sonar-scanner/bin/sonar-scanner -Dsonar.projectKey=backend -Dsonar.sources=.'
-                    }
-                }
-        
-            }
+         stage('SonarQube Analysis') {
+    steps {
+        dir('backend') {
+            sh '''/opt/sonar-scanner/bin/sonar-scanner \
+                -Dsonar.projectKey=backend \
+                -Dsonar.sources=. \
+                -Dsonar.host.url=http://localhost:9000 \
+                -Dsonar.login=squ_3d6dafbfa457121e6e3178b7c500ad6cdacf1ba6'''
+        }
+    }
+}
         }
 
         stage('🐳 Docker Build') {
