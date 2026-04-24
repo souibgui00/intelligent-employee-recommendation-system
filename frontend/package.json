@@ -69,7 +69,10 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.4",
+    "@tailwindcss/oxide-win32-x64-msvc": "^4.2.4",
+    "@tailwindcss/postcss": "^4.2.4",
+      "lightningcss": "^1.24.0",
+      "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.5",
     "terser": "^5.31.6",
