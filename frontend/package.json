@@ -69,7 +69,6 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@tailwindcss/oxide-win32-x64-msvc": "^4.2.4",
     "@tailwindcss/postcss": "^3.4.0",
       "lightningcss": "^1.24.0",
       "@vitejs/plugin-react": "^4.3.4",
