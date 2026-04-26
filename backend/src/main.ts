@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { join } from 'path';
 import * as express from 'express';
+import { imageOptimizationMiddleware } from './image-optimization.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -10,9 +11,11 @@ async function bootstrap() {
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:3000',
+    'http://localhost:4173',
     'http://127.0.0.1:5173',
     'http://127.0.0.1:5174',
     'http://127.0.0.1:3000',
+    'http://127.0.0.1:4173',
     'https://intelligent-employee-recommendation-system-d363-kbcappi90.vercel.app',
   ];
 
@@ -53,7 +56,8 @@ async function bootstrap() {
 
   // Serve static files from 'uploads' directory
   const uploadDir = join(process.cwd(), 'uploads');
-  // Ensure the directory exists (simple check/create if needed handled by developer)
+  // Use Sharp middleware to convert/resize dynamic images before falling back to express.static
+  app.use('/uploads', imageOptimizationMiddleware);
   app.use('/uploads', express.static(uploadDir));
   const port = process.env.PORT || 3001;
   await app.listen(port);

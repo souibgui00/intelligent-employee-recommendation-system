@@ -231,7 +231,7 @@ export function DashboardHeader({ title = "Dashboard", description, children }) 
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" aria-label={`Open user menu for ${user?.name || "current user"}`} className="flex items-center p-0 h-12 w-12 rounded-2xl hover:bg-slate-50 border border-slate-100 hover:border-[#1E5FA8]/30 transition-all group overflow-hidden shadow-sm">
                 <Avatar className="h-full w-full rounded-2xl">
-                  <AvatarImage src={user?.avatar} />
+                  <AvatarImage src={user?.avatar} loading="eager" fetchPriority="high" requestedSize={56} />
                   <AvatarFallback className="bg-slate-100 text-[#1E5FA8] text-[10px] font-black rounded-2xl">
                     {getInitials(user?.name)}
                   </AvatarFallback>
