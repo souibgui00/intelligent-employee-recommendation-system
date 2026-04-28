@@ -99,7 +99,7 @@ export function DataProvider({ children }) {
 
   const fetchUsers = useCallback(async (preloadedSkills) => {
     try {
-      const data = await api.get("/users")
+      const data = await api.get("/users?lightweight=true")
       if (Array.isArray(data)) {
         // Use passed-in skills list first (avoids stale-closure race with fetchSkills),
         // then fall back to the current skills state.
@@ -148,6 +148,7 @@ export function DataProvider({ children }) {
             yearsOfExperience: u.yearsOfExperience,
             rank: u.rank,
             rankScore: u.rankScore,
+            lightweight: true,
           }
         })
         setEmployees(mappedEmployees)
@@ -178,7 +179,7 @@ export function DataProvider({ children }) {
   const fetchActivities = useCallback(async () => {
     try {
       const data = await api.get("/activities")
-      if (Array.isArray(data)) {
+        console.log(`[DataProvider] fetchActivities success. Received ${data.length} raw activities. State will be updated.`)
         setActivities(data.map(a => {
           const id = normalizeId(a._id ?? a.id)
           return {
@@ -190,7 +191,6 @@ export function DataProvider({ children }) {
             availableSeats: a.availableSeats ?? a.capacity ?? 0,
           }
         }))
-      }
     } catch (error) {
       console.error("Failed to fetch activities:", error)
     }
@@ -844,6 +844,7 @@ export function DataProvider({ children }) {
   // Core lists: run once auth has finished hydrating from storage (do not require `user` here).
   // Child effects run before parent Auth's effect on the first paint; gating only on `user` skipped the load entirely.
   useEffect(() => {
+    console.log(`[DataProvider] Init effect - authLoading: ${authLoading}, isAuthenticated: ${isAuthenticated}, user: ${!!user}`)
     if (authLoading) return
 
     if (!isAuthenticated) {

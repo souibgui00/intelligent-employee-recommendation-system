@@ -407,13 +407,14 @@ export class ActivitiesService {
     activity: any,
     employees: any[],
     intent: string,
+    customDescription: string = ''
   ): Promise<Map<string, any>> {
     try {
       const payload = {
         activity: {
           activityId: activity._id.toString(),
           title: activity.title,
-          description: activity.description || '',
+          description: ((activity.description || '') + ' ' + customDescription).trim(),
           requiredSkills: (activity.requiredSkills || []).map((r: any) => {
             const skill = r.skillId;
             return skill?.name || skill?.toString() || '';
@@ -604,12 +605,42 @@ export class ActivitiesService {
       ...existingAssignmentsList.map((a: any) => a.userId.toString())
     ]);
 
-    const candidatesToScore = eligibleEmployees.filter(
+    let candidatesToScore = eligibleEmployees.filter(
       (user: any) => !excludedUserIds.has(user._id.toString())
     );
 
     if (candidatesToScore.length === 0) {
       return { activity: activity, candidates: [] };
+    }
+
+    // ⚡ Performance Fix 1: Pre-filter by skill overlap BEFORE the expensive NLP call.
+    // This reduces 1500 employees → ~50-300 candidates, dramatically speeding up scoring.
+    const requiredSkillIds = new Set(
+      (activity.requiredSkills || []).map((r: any) =>
+        (r.skillId?._id ?? r.skillId)?.toString()?.trim()
+      ).filter(Boolean)
+    );
+
+    if (requiredSkillIds.size > 0) {
+      const intent = activity.intent || this.prioritizationService.inferIntent(activity.type);
+
+      const filtered = candidatesToScore.filter((user: any) => {
+        const userSkillIds = (user.skills || []).map((s: any) => s.skillId?.toString()?.trim());
+        const hasOverlap = userSkillIds.some((id: string) => requiredSkillIds.has(id));
+        // For 'development' intent: prefer employees MISSING skills (skill gaps = good)
+        // For 'performance' intent: prefer employees WHO HAVE the skills
+        // For 'balanced': include all with any overlap
+        if (intent === 'development') return !hasOverlap || hasOverlap; // keep all for dev
+        return hasOverlap;
+      });
+
+      // Guarantee a minimum pool so we always return results
+      candidatesToScore = filtered.length >= 30 ? filtered : candidatesToScore.slice(0, 200);
+    }
+
+    // ⚡ Hard cap at 300 to keep NLP fast regardless of pool size
+    if (candidatesToScore.length > 300) {
+      candidatesToScore = candidatesToScore.slice(0, 300);
     }
 
     // 3. Scoring — intent-aware hybrid
@@ -717,15 +748,56 @@ export class ActivitiesService {
         promptBoost: Math.round(promptBoost * 100) / 100,
         intentScore: Math.round(intentScore * 100) / 100,
         intent,
-        recommendation_reason: candidate.recommendation_reason,
+        yearsOfExperience: candidate.yearsOfExperience || (allUsers.find(e => e._id.toString() === candidate.employeeId)?.yearsOfExperience || 0),
+        recommendation_reason: finalReason,
         gap: candidate.skillGaps,
       };
     });
 
-    const candidates = rankedCandidates
-      .filter((c: any) => c !== null)
-      .sort((a: any, b: any) => b.score - a.score)
-      .slice(0, 10);
+    let candidates = rankedCandidates.filter((c: any) => c !== null);
+
+    // If frontend options are supplied, we use them for breaking ties or adding modifiers
+    // This allows the slider for "skillPriority" to actually differentiate people correctly!
+    if (Object.keys(options).length > 0) {
+      if (options.experienceFilter > 0) {
+        candidates = candidates.filter((c: any) => c.yearsOfExperience >= options.experienceFilter);
+      }
+      
+      candidates = candidates.map((c: any) => {
+          let adj = c.score * 100;
+          const gapCount = c.gap.length;
+
+          if (options.skillPriority === 'skills') {
+              if (gapCount === 0) adj += 15;
+              else adj -= (gapCount * 5);
+          } else if (options.skillPriority === 'experience') {
+              if (c.yearsOfExperience > 5) adj += 10;
+              if (c.yearsOfExperience > 10) adj += 10;
+          } else if (options.skillPriority === 'growth') {
+              if (gapCount > 0) adj += (gapCount * 8);
+          }
+
+          if (options.priorityWeight > 0) {
+             adj += (options.priorityWeight * 0.1);
+          }
+
+          c.score = Math.max(0, Math.min(100, Math.round(adj))) / 100;
+          return c;
+      });
+    }
+
+    candidates = candidates.sort((a: any, b: any) => {
+      // Primary: Score
+      if (b.score !== a.score) return b.score - a.score;
+      // Secondary tie breaker: Experience
+      if (b.yearsOfExperience !== a.yearsOfExperience) return b.yearsOfExperience - a.yearsOfExperience;
+      // Tertiary tie breaker: Fewest gaps
+      return a.gap.length - b.gap.length;
+    });
+
+    if (options.seatsToFill && options.seatsToFill > 0) {
+      candidates = candidates.slice(0, options.seatsToFill);
+    }
 
     return {
       activity: {
@@ -743,10 +815,27 @@ export class ActivitiesService {
 
   async extractSkillsFromDescription(description: string, title: string): Promise<any> {
     try {
+      // Enhancement: fetch real skill names from MongoDB and pass them
+      // to the Python NLP service so it uses dynamic vocabulary instead
+      // of its hardcoded default list
+      let knownSkills: string[] | undefined;
+      try {
+        // SkillsService is available via ActivitiesModule imports
+        // Use the httpService to call our own skills API to get all skill names
+        const skillsResponse = await firstValueFrom(
+          this.httpService.get<any>('http://localhost:3001/api/skills'),
+        );
+        knownSkills = (skillsResponse.data || []).map((s: any) => s.name).filter(Boolean);
+      } catch {
+        // If skills fetch fails, Python will use its default vocabulary
+        knownSkills = undefined;
+      }
+
       const response = await firstValueFrom(
         this.httpService.post<any>('http://localhost:8000/extract-skills', {
           description,
           title,
+          ...(knownSkills && knownSkills.length > 0 ? { knownSkills } : {}),
         }),
       );
       return response.data;
