@@ -59,4 +59,4 @@ PIDEV – 4TWIN4 | 2025–2026
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/[ton-username]/Esprit-PIDEV-[Classe]-2026-HRRecommender.git
+   git clone https://github.com/souibgui00/Esprit-PIFullstackJS-4TWIN4-2026-IntelligentEmployeeRecommendationSystem.git
