@@ -62,7 +62,7 @@ export class ActivitiesController {
 
     @Roles(Role.ADMIN, Role.MANAGER, Role.HR)
     @Post(':activityId/recommendations')
-    getRecommendationsForActivity(@Param('activityId') activityId: string, @Body() options: any = {}) {
+    getRecommendationsForActivityPost(@Param('activityId') activityId: string, @Body() options: any = {}) {
         return this.activitiesService.getRecommendationsForActivity(activityId, options);
     }
 
