@@ -1,3 +1,0 @@
-// Déplacé depuis backend/scripts/seed-test-manager-hr.cjs
-// Seeder manager RH
-// ...existing code...
