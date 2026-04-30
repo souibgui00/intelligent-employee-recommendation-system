@@ -1,0 +1,109 @@
+pipeline {
+    agent any
+
+    environment {
+        NODE_OPTIONS = "--max-old-space-size=4096"
+        SONAR_HOST_URL = "http://100.105.57.78:9000"
+        SONAR_PROJECT_KEY = "employee-recommendation-backend"
+    }
+
+    stages {
+        stage('📥 Checkout') {
+            steps {
+                checkout scm
+                echo '✅ Code checkout completed'
+            }
+        }
+
+        stage('🔧 Setup') {
+            steps {
+                dir('backend') {
+                    sh '''
+                        echo "🔍 Node version: $(node --version)"
+                        echo "🔍 NPM version: $(npm --version)"
+                        echo "🔍 Current directory: $(pwd)"
+                        echo "🔍 List files:"
+                        ls -la
+                    '''
+                }
+            }
+        }
+
+        stage('📦 Install Dependencies') {
+            steps {
+                dir('backend') {
+                    sh '''
+                        echo "📦 Installing dependencies..."
+                        npm ci --prefer-offline --no-audit --no-fund || npm install --legacy-peer-deps
+                    '''
+                }
+            }
+        }
+
+        stage('🧪 Run Tests') {
+            steps {
+                dir('backend') {
+                    sh '''
+                        echo "🧪 Running tests with coverage..."
+                        npm run test:cov || {
+                            echo "❌ Tests failed, checking what went wrong..."
+                            npm run test:cov -- --verbose
+                            exit 1
+                        }
+                        
+                        echo "🔍 Checking coverage results..."
+                        if [ -d "coverage" ]; then
+                            echo "✅ Coverage directory found"
+                            ls -la coverage/
+                            if [ -f "coverage/lcov.info" ]; then
+                                echo "✅ LCOV file found"
+                                echo "📊 Coverage summary:"
+                                tail -5 coverage/lcov.info
+                            else
+                                echo "❌ LCOV file not found"
+                                ls -la coverage/
+                            fi
+                        else
+                            echo "❌ No coverage directory"
+                        fi
+                    '''
+                }
+            }
+        }
+
+        stage('🔍 SonarQube Analysis') {
+            steps {
+                dir('backend') {
+                    sh '''
+                        echo "🔍 Starting SonarQube analysis..."
+                        if [ -f "coverage/lcov.info" ]; then
+                            sonar-scanner \
+                                -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                                -Dsonar.projectName="Employee Recommendation Backend" \
+                                -Dsonar.sources=src \
+                                -Dsonar.tests=test \
+                                -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+                                -Dsonar.host.url=${SONAR_HOST_URL} \
+                                -Dsonar.login=${SONAR_AUTH_TOKEN}
+                        else
+                            echo "❌ No coverage file found, skipping SonarQube analysis"
+                            exit 1
+                        fi
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo '🏁 Pipeline completed'
+        }
+        success {
+            echo '✅ All stages completed successfully'
+        }
+        failure {
+            echo '❌ Pipeline failed - check logs above'
+        }
+    }
+}
