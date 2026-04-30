@@ -33,9 +33,11 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       sessionStorage.setItem('access_token', token);
       sessionStorage.setItem('user', JSON.stringify(userData));
+      return res.data;
     } catch (err) {
       const msg = err.response?.data?.message || 'Login failed';
       setError(msg);
+      setUser(null);
       throw err;
     } finally {
       setLoading(false);
@@ -54,6 +56,13 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       const res = await api.post('/auth/register', userData);
+      const newUser = res.data.user;
+      const token = res.data.token;
+      if (newUser) {
+        setUser(newUser);
+        sessionStorage.setItem('access_token', token);
+        sessionStorage.setItem('user', JSON.stringify(newUser));
+      }
       return res.data;
     } catch (err) {
       const msg = err.response?.data?.message || 'Registration failed';
@@ -66,8 +75,12 @@ export const AuthProvider = ({ children }) => {
 
   const refreshToken = async (token) => {
     try {
-      const res = await api.post('/auth/refresh', { token });
+      const res = await api.post('/auth/refresh', { refreshToken: token });
       sessionStorage.setItem('access_token', res.data.access_token);
+      if (res.data.refresh_token) {
+        sessionStorage.setItem('refresh_token', res.data.refresh_token);
+      }
+      return res.data;
     } catch (err) {
       logout();
       throw err;
@@ -78,6 +91,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await api.get('/auth/profile');
       setUser(res.data);
+      return res.data;
     } catch (err) {
       setUser(null);
       throw err;
