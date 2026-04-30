@@ -8,16 +8,22 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Initialize from sessionStorage on mount
+  // Initialize from sessionStorage on mount (guarded and tolerant)
   useEffect(() => {
-    const stored = sessionStorage.getItem('user');
-    const token = sessionStorage.getItem('access_token');
-    if (stored && stored !== 'undefined' && token) {
-      try {
-        setUser(JSON.parse(stored));
-      } catch (e) {
-        sessionStorage.removeItem('user');
+    try {
+      const stored = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('user') : null;
+      const token = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('access_token') : null;
+      if (stored && stored !== 'undefined' && stored !== 'null' && token) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed) setUser(parsed);
+        } catch (e) {
+          // ignore parse errors and clear stored value
+          try { sessionStorage.removeItem('user'); } catch (e) {}
+        }
       }
+    } catch (e) {
+      // sessionStorage might be mocked or unavailable; ignore
     }
   }, []);
 
@@ -28,14 +34,17 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       const res = await api.post('/auth/login', { email, password });
+      if (!res || !res.data) throw new Error('Login failed');
       const userData = res.data.user;
       const token = res.data.token;
       setUser(userData);
-      sessionStorage.setItem('access_token', token);
-      sessionStorage.setItem('user', JSON.stringify(userData));
+      try {
+        sessionStorage.setItem('access_token', token);
+        sessionStorage.setItem('user', JSON.stringify(userData));
+      } catch (e) {}
       return res.data;
     } catch (err) {
-      const msg = err.response?.data?.message || 'Login failed';
+      const msg = err.response?.data?.message || err.message || 'Login failed';
       setError(msg);
       setUser(null);
       throw err;
@@ -56,16 +65,19 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       const res = await api.post('/auth/register', userData);
+      if (!res || !res.data) throw new Error('Registration failed');
       const newUser = res.data.user;
       const token = res.data.token;
       if (newUser) {
         setUser(newUser);
-        sessionStorage.setItem('access_token', token);
-        sessionStorage.setItem('user', JSON.stringify(newUser));
+        try {
+          sessionStorage.setItem('access_token', token);
+          sessionStorage.setItem('user', JSON.stringify(newUser));
+        } catch (e) {}
       }
       return res.data;
     } catch (err) {
-      const msg = err.response?.data?.message || 'Registration failed';
+      const msg = err.response?.data?.message || err.message || 'Registration failed';
       setError(msg);
       throw err;
     } finally {
@@ -76,10 +88,13 @@ export const AuthProvider = ({ children }) => {
   const refreshToken = async (token) => {
     try {
       const res = await api.post('/auth/refresh', { refreshToken: token });
-      sessionStorage.setItem('access_token', res.data.access_token);
-      if (res.data.refresh_token) {
-        sessionStorage.setItem('refresh_token', res.data.refresh_token);
-      }
+      if (!res || !res.data) throw new Error('Refresh failed');
+      try {
+        sessionStorage.setItem('access_token', res.data.access_token);
+        if (res.data.refresh_token) {
+          sessionStorage.setItem('refresh_token', res.data.refresh_token);
+        }
+      } catch (e) {}
       return res.data;
     } catch (err) {
       logout();
@@ -90,6 +105,7 @@ export const AuthProvider = ({ children }) => {
   const fetchUserProfile = async () => {
     try {
       const res = await api.get('/auth/profile');
+      if (!res || !res.data) throw new Error('Failed to fetch profile');
       setUser(res.data);
       return res.data;
     } catch (err) {

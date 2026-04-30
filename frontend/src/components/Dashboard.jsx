@@ -23,7 +23,7 @@ const Dashboard = () => {
   useEffect(() => { fetchData(); }, []);
 
   if (loading) return <div>Loading Dashboard...</div>;
-  if (error) return <div>{error}</div>;
+  if (error) return <div role="alert">{error}</div>;
   if (!data) return null;
 
   const departments = Array.isArray(data.departments) ? data.departments : [];
