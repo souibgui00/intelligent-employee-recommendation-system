@@ -54,8 +54,12 @@ const sessionStorageMock = {
 };
 global.sessionStorage = sessionStorageMock;
 
-// Mock window.location (defineProperty to avoid jsdom navigation issues)
+// Mock window.location safely: delete then redefine as configurable
+try {
+  delete window.location;
+} catch (e) {}
 Object.defineProperty(window, 'location', {
+  configurable: true,
   writable: true,
   value: {
     href: 'http://localhost:3000',
