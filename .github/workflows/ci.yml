@@ -29,15 +29,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Backend - install dependencies
+      - name: Backend - install & test
         working-directory: backend
         run: |
-          npm ci --prefer-offline --no-audit --no-fund
-
-      - name: Backend - run tests
-        working-directory: backend
-        run: |
-          npm test -- --coverage --watchAll=false
+          npm install --legacy-peer-deps
+          npm test -- --coverage --ci
 
       - name: Backend - upload coverage
         uses: codecov/codecov-action@v3
