@@ -21,7 +21,7 @@ const LoginForm = () => {
   const validate = () => {
     const newErrors = {};
     if (!email) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Please enter a valid email';
+    else if (!isValidEmail(email)) newErrors.email = 'Please enter a valid email';
     if (!password) newErrors.password = 'Password is required';
     else if (password.length < 6) newErrors.password = 'Password must be at least 6 characters';
     return newErrors;
