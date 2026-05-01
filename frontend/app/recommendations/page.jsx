@@ -41,8 +41,7 @@ function RecommendationsContent() {
 
     try {
       const actId = selectedActivity._id || selectedActivity.id
-      console.log('Calling API with actId:', actId)
-      const response = await api.post(`/activities/${actId}/recommendations`, options)
+      const response = await api.post(`/api/activities/${actId}/recommendations`, options)
       const candidates = Array.isArray(response?.candidates) ? response.candidates : []
 
       const mappedResults = candidates.map((c) => ({

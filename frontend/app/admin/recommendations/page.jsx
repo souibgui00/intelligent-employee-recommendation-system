@@ -41,11 +41,8 @@ function RecommendationsContent() {
 
     try {
       const selectedActivityId = selectedActivity.id || selectedActivity._id
-      const prompt = (options?.customDescription || "").trim()
-      const endpoint = prompt
-        ? `/activities/${selectedActivityId}/recommendations?prompt=${encodeURIComponent(prompt)}`
-        : `/activities/${selectedActivityId}/recommendations`
-      const response = await api.get(endpoint)
+      const endpoint = `/api/activities/${selectedActivityId}/recommendations`
+      const response = await api.post(endpoint, options)
       const candidates = Array.isArray(response?.candidates) ? response.candidates : []
 
       // 1. Initial Mapping
