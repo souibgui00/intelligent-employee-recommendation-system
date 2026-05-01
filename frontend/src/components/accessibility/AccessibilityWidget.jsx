@@ -1,288 +1,226 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Settings, Eye, Type, MousePointer2, RotateCcw, X, Check, 
-  Volume2, Focus, ZapOff, AlignLeft, Search, Sun, Monitor,
-  Accessibility, Languages, FileText, MousePointer, Square
-} from 'lucide-react';
-import { Button } from "../ui/button";
-import { cn } from "../../lib/utils";
+import React, { useState, useEffect } from 'react';
+import * as Lucide from 'lucide-react';
+
+// Internal utility to replace 'cn' and avoid import errors
+const cn = (...classes) => classes.filter(Boolean).join(' ');
 
 export function AccessibilityWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  
-  // Settings State
-  const [settings, setSettings] = useState({
-    readingGuide: false,
-    highContrast: false,
-    grayscale: false,
-    focusHighlight: false,
-    largeCursor: false,
-    dyslexicFont: false,
-    reducedMotion: false,
-    lineSpacing: 1, // 1: Normal, 1.5: Wide, 2: Extra Wide
-    textSpacing: 0, // 0: Normal, 0.1: Wide, 0.2: Extra Wide
-    fontSize: 100,
-    screenReader: false,
-    focusMask: false,
+  const [settings, setSettings] = useState(() => {
+    const saved = localStorage.getItem('a11y-settings');
+    return saved ? JSON.parse(saved) : {
+      readingGuide: false,
+      highContrast: false,
+      grayscale: false,
+      largeCursor: false,
+      focusRings: false,
+      dyslexicFont: false,
+      fontSize: 100,
+      screenReader: false,
+      spotlight: false,
+      reduceMotion: false
+    };
   });
 
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const utteranceRef = useRef(null);
+  const [guidePosition, setGuidePosition] = useState(0);
+  const [spotlightPos, setSpotlightPos] = useState({ x: 0, y: 0 });
 
-  // Mouse tracking for Reading Guide & Spotlight
+  useEffect(() => {
+    localStorage.setItem('a11y-settings', JSON.stringify(settings));
+    const body = document.documentElement;
+    
+    // Apply High Contrast
+    if (settings.highContrast) body.classList.add('a11y-high-contrast');
+    else body.classList.remove('a11y-high-contrast');
+
+    // Apply other styles to body
+    const bodyEl = document.body;
+    bodyEl.classList.toggle('a11y-grayscale', settings.grayscale);
+    bodyEl.classList.toggle('a11y-large-cursor', settings.largeCursor);
+    bodyEl.classList.toggle('a11y-focus-rings', settings.focusRings);
+    bodyEl.classList.toggle('a11y-dyslexic', settings.dyslexicFont);
+    bodyEl.classList.toggle('a11y-no-motion', settings.reduceMotion);
+    
+    body.style.fontSize = `${settings.fontSize}%`;
+
+    return () => {
+      body.style.fontSize = '';
+    };
+  }, [settings]);
+
   useEffect(() => {
     const handleMouseMove = (e) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
+      if (settings.readingGuide) setGuidePosition(e.clientY);
+      if (settings.spotlight) setSpotlightPos({ x: e.clientX, y: e.clientY });
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [settings.readingGuide, settings.spotlight]);
 
-  // Apply Classes to HTML element
   useEffect(() => {
-    const html = document.documentElement;
-    
-    // Cleanup old classes
-    html.classList.remove(
-      'a11y-high-contrast', 
-      'a11y-grayscale', 
-      'a11y-focus-highlight', 
-      'a11y-large-cursor', 
-      'a11y-dyslexic', 
-      'a11y-no-motion'
-    );
-
-    if (settings.highContrast) html.classList.add('a11y-high-contrast');
-    if (settings.grayscale) html.classList.add('a11y-grayscale');
-    if (settings.focusHighlight) html.classList.add('a11y-focus-highlight');
-    if (settings.largeCursor) html.classList.add('a11y-large-cursor');
-    if (settings.dyslexicFont) html.classList.add('a11y-dyslexic');
-    if (settings.reducedMotion) html.classList.add('a11y-no-motion');
-
-    html.style.fontSize = `${settings.fontSize}%`;
-    html.style.setProperty('--a11y-line-spacing', settings.lineSpacing);
-    html.style.setProperty('--a11y-text-spacing', `${settings.textSpacing}em`);
-
-  }, [settings]);
-
-  // Screen Reader logic
-  useEffect(() => {
-    if (!settings.screenReader) {
-      window.speechSynthesis.cancel();
-      return;
-    }
-
     const handleMouseOver = (e) => {
       if (!settings.screenReader) return;
-      
-      // Get text and strip technical noise (IDs, brackets, etc)
       let text = e.target.innerText || e.target.ariaLabel || e.target.alt;
       if (text && text.length < 300) {
         text = text.replace(/[\[\]{}()_]/g, ' ').replace(/\s+/g, ' ').trim();
-        
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
-        
-        // Find best English voice
-        const voices = window.speechSynthesis.getVoices();
-        const englishVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
-        if (englishVoice) utterance.voice = englishVoice;
-        
         utterance.lang = 'en-US';
-        utterance.rate = 1.0;
-        utterance.pitch = 1.0;
         window.speechSynthesis.speak(utterance);
       }
     };
-
     window.addEventListener('mouseover', handleMouseOver);
     return () => window.removeEventListener('mouseover', handleMouseOver);
   }, [settings.screenReader]);
 
-  const toggleSetting = (key) => {
-    setSettings(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const updateNumeric = (key, value) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
-  };
-
-  const resetAll = () => {
+  const toggle = (key) => setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+  
+  const resetSettings = () => {
     setSettings({
       readingGuide: false,
       highContrast: false,
       grayscale: false,
-      focusHighlight: false,
       largeCursor: false,
+      focusRings: false,
       dyslexicFont: false,
-      reducedMotion: false,
-      lineSpacing: 1,
-      textSpacing: 0,
       fontSize: 100,
       screenReader: false,
-      focusMask: false,
+      spotlight: false,
+      reduceMotion: false
     });
-    window.speechSynthesis.cancel();
   };
-
-  const ToolCard = ({ id, icon: Icon, label, active, onClick }) => (
-    <button
-      onClick={() => onClick ? onClick() : toggleSetting(id)}
-      className={cn(
-        "flex flex-col items-center justify-center p-4 rounded-[24px] transition-all duration-300 border gap-2",
-        active 
-          ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-[1.02]" 
-          : "bg-slate-50 text-slate-600 border-slate-100 hover:bg-slate-100 hover:border-slate-200"
-      )}
-    >
-      <Icon className={cn("w-6 h-6", active ? "text-white" : "text-slate-400")} />
-      <span className="text-[10px] font-black tracking-widest uppercase">{label}</span>
-    </button>
-  );
 
   return (
     <>
-      {/* Reading Guide */}
+      {/* Reading Guide Line */}
       {settings.readingGuide && (
         <div 
-          className="a11y-reading-guide-line"
-          style={{ top: `${mousePos.y}px`, transform: 'translateY(-50%)' }}
+          className="fixed left-0 right-0 h-1 bg-[#F28C1B]/60 pointer-events-none z-[2147483647] shadow-[0_0_20px_rgba(242,140,27,0.8)] transition-all duration-75 ease-out"
+          style={{ top: `${guidePosition}px`, transform: 'translateY(-50%)' }}
         />
       )}
 
-      {/* Focus Mask (Spotlight) */}
-      {settings.focusMask && (
+      {/* Spotlight Mask */}
+      {settings.spotlight && (
         <div 
-          className="fixed inset-0 pointer-events-none z-[99998]"
+          className="fixed inset-0 pointer-events-none z-[2147483646]"
           style={{
-            background: `radial-gradient(circle 150px at ${mousePos.x}px ${mousePos.y}px, transparent 100%, rgba(0,0,0,0.85) 0%)`
+            background: `radial-gradient(circle 200px at ${spotlightPos.x}px ${spotlightPos.y}px, transparent 0%, rgba(0,0,0,0.9) 100%)`
           }}
         />
       )}
 
-      {/* Floating Toggle */}
+      {/* Floating Button (ORANGE Background for Maximum Visibility) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-8 left-8 w-16 h-16 bg-slate-900 text-white rounded-[24px] shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-[99999] group overflow-hidden"
+        className="fixed bottom-8 right-8 w-16 h-16 bg-[#F28C1B] text-white rounded-3xl shadow-[0_15px_50px_rgba(242,140,27,0.4)] flex items-center justify-center hover:scale-110 hover:rotate-6 active:scale-90 transition-all z-[2147483647] group border-none cursor-pointer border-4 border-white"
         aria-label="Accessibility Settings"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-        {isOpen ? <X className="w-7 h-7 relative z-10" /> : <Accessibility className="w-7 h-7 relative z-10 group-hover:rotate-12 transition-transform" />}
+        {isOpen ? (
+          <Lucide.X className="w-8 h-8 animate-in spin-in-90 duration-300" />
+        ) : (
+          <Lucide.PersonStanding className="w-8 h-8 group-hover:scale-125 transition-transform duration-300 drop-shadow-md" />
+        )}
       </button>
 
-      {/* Main Panel */}
+      {/* Settings Panel */}
       {isOpen && (
-        <div className="fixed bottom-28 left-8 w-[400px] max-h-[80vh] bg-white rounded-[40px] shadow-[0_32px_80px_rgba(0,0,0,0.25)] border border-slate-100 z-[99999] flex flex-col overflow-hidden animate-in slide-in-from-bottom-8 duration-500">
-          {/* Header */}
-          <div className="p-8 pb-4 flex items-center justify-between bg-slate-50/50 border-b border-slate-100">
-            <div>
-              <h3 className="text-xl font-black tracking-tighter text-slate-900 flex items-center gap-2">
-                <Settings className="w-5 h-5 text-primary" />
-                Assistive Tools
-              </h3>
-              <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mt-1">Adaptive Workspace</p>
+        <div className="fixed bottom-32 right-8 w-85 bg-white rounded-[2.5rem] shadow-[0_30px_100px_rgba(0,0,0,0.3)] border-4 border-[#F28C1B]/10 p-8 z-[2147483647] animate-in slide-in-from-bottom-10 fade-in duration-500">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-[#F28C1B] rounded-2xl shadow-lg shadow-orange-500/30">
+                <Lucide.PersonStanding className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="font-black text-slate-900 text-2xl tracking-tighter">Accessibility</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Support Center</p>
+              </div>
             </div>
-            <button 
-              onClick={resetAll}
-              className="px-4 py-2 bg-white rounded-xl text-[10px] font-black tracking-widest text-slate-400 hover:text-primary border border-slate-100 transition-all flex items-center gap-2"
-            >
-              <RotateCcw className="w-3 h-3" /> RESET
+            <button onClick={resetSettings} className="p-2 hover:bg-slate-100 rounded-xl transition-all border-none bg-transparent cursor-pointer group">
+              <Lucide.RotateCcw className="w-5 h-5 text-slate-400 group-hover:text-[#F28C1B] group-hover:rotate-[-45deg] transition-all" />
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-            {/* Visual Section */}
-            <section className="space-y-4">
-              <h4 className="text-[10px] font-black text-slate-300 tracking-[0.2em] uppercase">Visual Enhancement</h4>
-              <div className="grid grid-cols-3 gap-3">
-                <ToolCard id="highContrast" icon={Sun} label="Contrast" active={settings.highContrast} />
-                <ToolCard id="grayscale" icon={Monitor} label="Grayscale" active={settings.grayscale} />
-                <ToolCard id="focusHighlight" icon={Square} label="Borders" active={settings.focusHighlight} />
-                <ToolCard id="largeCursor" icon={MousePointer} label="Cursor" active={settings.largeCursor} />
-                <ToolCard id="focusMask" icon={Search} label="Spotlight" active={settings.focusMask} />
-                <ToolCard id="reducedMotion" icon={ZapOff} label="No Motion" active={settings.reducedMotion} />
-              </div>
-            </section>
-
-            {/* Reading Section */}
-            <section className="space-y-4">
-              <h4 className="text-[10px] font-black text-slate-300 tracking-[0.2em] uppercase">Reading & Focus</h4>
-              <div className="grid grid-cols-2 gap-3">
-                <ToolCard id="readingGuide" icon={MousePointer2} label="Reading Line" active={settings.readingGuide} />
-                <ToolCard id="dyslexicFont" icon={Languages} label="Dyslexic" active={settings.dyslexicFont} />
-              </div>
-
-              {/* Sliders / Multi-state buttons */}
-              <div className="space-y-4 pt-2">
-                <div className="bg-slate-50 p-4 rounded-3xl space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black text-slate-500 tracking-widest uppercase">Text Size</span>
-                    <span className="text-xs font-black text-primary">{settings.fontSize}%</span>
+          <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+            {[
+              { key: 'readingGuide', icon: <Lucide.MousePointer2 />, label: 'Reading Guide', desc: 'Visual focus line' },
+              { key: 'highContrast', icon: <Lucide.Eye />, label: 'High Contrast', desc: 'Sharp color profiles' },
+              { key: 'grayscale', icon: <Lucide.Sun />, label: 'Monochrome', desc: 'Black and white' },
+              { key: 'largeCursor', icon: <Lucide.MousePointer />, label: 'Large Cursor', desc: 'Bigger mouse pointer' },
+              { key: 'focusRings', icon: <Lucide.Zap />, label: 'Focus Rings', desc: 'Highlight active elements' },
+              { key: 'dyslexicFont', icon: <Lucide.Type />, label: 'Dyslexic Font', desc: 'Specialized typeface' },
+              { key: 'screenReader', icon: <Lucide.Volume2 />, label: 'Screen Reader', desc: 'Text-to-speech engine' },
+              { key: 'spotlight', icon: <Lucide.Search />, label: 'Spotlight', desc: 'Focus on small area' },
+              { key: 'reduceMotion', icon: <Lucide.Wind />, label: 'Reduce Motion', desc: 'Minimize animations' },
+            ].map(tool => (
+              <div 
+                key={tool.key}
+                className={cn(
+                  "flex items-center justify-between p-4 rounded-[1.5rem] transition-all duration-300 cursor-pointer group/item",
+                  settings[tool.key] 
+                    ? "bg-[#F28C1B] text-white shadow-xl shadow-orange-500/20 scale-[1.02]" 
+                    : "bg-slate-50 hover:bg-slate-100 text-slate-600 border border-transparent hover:border-orange-200"
+                )}
+                onClick={() => toggle(tool.key)}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={cn(
+                    "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300",
+                    settings[tool.key] ? "bg-white/20" : "bg-white shadow-sm"
+                  )}>
+                    {React.cloneElement(tool.icon, { 
+                      className: cn("w-6 h-6", settings[tool.key] ? "text-white" : "text-[#F28C1B]") 
+                    })}
                   </div>
-                  <div className="flex gap-2">
-                    {[100, 120, 140, 160].map(size => (
-                      <button 
-                        key={size}
-                        onClick={() => updateNumeric('fontSize', size)}
-                        className={cn(
-                          "flex-1 py-2 rounded-xl text-xs font-bold transition-all",
-                          settings.fontSize === size ? "bg-primary text-white" : "bg-white text-slate-400"
-                        )}
-                      >
-                        {size === 100 ? 'Std' : `+${size-100}`}
-                      </button>
-                    ))}
+                  <div>
+                    <p className="text-[15px] font-black tracking-tight leading-none mb-1">{tool.label}</p>
+                    <p className={cn("text-[10px] font-bold", settings[tool.key] ? "text-white/80" : "text-slate-400")}>{tool.desc}</p>
                   </div>
                 </div>
+                {settings[tool.key] && (
+                  <Lucide.Check className="w-5 h-5 text-white stroke-[4px] animate-in zoom-in duration-300" />
+                )}
+              </div>
+            ))}
 
-                <div className="bg-slate-50 p-4 rounded-3xl space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black text-slate-500 tracking-widest uppercase">Line Spacing</span>
-                    <span className="text-xs font-black text-primary">Level {settings.lineSpacing}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    {[1, 1.5, 2].map(val => (
-                      <button 
-                        key={val}
-                        onClick={() => updateNumeric('lineSpacing', val)}
-                        className={cn(
-                          "flex-1 py-2 rounded-xl text-xs font-bold transition-all",
-                          settings.lineSpacing === val ? "bg-primary text-white" : "bg-white text-slate-400"
-                        )}
-                      >
-                        {val === 1 ? 'Tight' : val === 1.5 ? 'Mid' : 'Wide'}
-                      </button>
-                    ))}
-                  </div>
+            {/* Font Size Scaling */}
+            <div className="space-y-4 px-1 pt-6 border-t border-slate-100 mt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Lucide.Type className="w-5 h-5 text-slate-400" />
+                  <span className="text-sm font-black text-slate-900 tracking-tight">Text Magnification</span>
                 </div>
+                <span className="text-xs font-black text-white bg-[#F28C1B] px-3 py-1 rounded-full shadow-lg shadow-orange-500/20">{settings.fontSize}%</span>
               </div>
-            </section>
-
-            {/* Auditory Section */}
-            <section className="space-y-4">
-              <h4 className="text-[10px] font-black text-slate-300 tracking-[0.2em] uppercase">Assistive Audio</h4>
-              <ToolCard 
-                id="screenReader" 
-                icon={Volume2} 
-                label="Screen Reader (TTS)" 
-                active={settings.screenReader} 
-                className="w-full"
-              />
-            </section>
-          </div>
-
-          {/* Footer Info */}
-          <div className="p-8 bg-slate-900 text-white flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Accessibility className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black tracking-widest">A11Y ENGINE v4.2</p>
-                <p className="text-[8px] text-slate-400 font-bold tracking-[0.2em]">Maghrebia Intelligence</p>
+              <div className="flex items-center gap-5">
+                <button 
+                  onClick={() => setSettings(s => ({ ...s, fontSize: Math.max(80, s.fontSize - 10) }))}
+                  className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center font-black text-xl hover:bg-slate-200 transition-all border-none cursor-pointer text-slate-600"
+                >-</button>
+                <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden p-1 shadow-inner">
+                  <div className="h-full bg-gradient-to-r from-[#F28C1B] to-[#FFB76B] rounded-full transition-all duration-500 ease-out shadow-sm" style={{ width: `${(settings.fontSize - 80) / (150 - 80) * 100}%` }} />
+                </div>
+                <button 
+                  onClick={() => setSettings(s => ({ ...s, fontSize: Math.min(150, s.fontSize + 10) }))}
+                  className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center font-black text-xl hover:bg-slate-200 transition-all border-none cursor-pointer text-slate-600"
+                >+</button>
               </div>
             </div>
-            <p className="text-[10px] font-bold text-slate-500">WCAG 2.1 Compliant</p>
+          </div>
+          
+          <div className="mt-8 flex items-center justify-between border-t border-slate-100 pt-6">
+            <div className="flex items-center gap-3">
+              <div className="w-1.5 h-8 bg-[#F28C1B] rounded-full" />
+              <div>
+                <p className="text-[11px] font-black tracking-[0.2em] text-slate-900 leading-none">A11Y v4.2</p>
+                <p className="text-[8px] text-slate-400 font-bold tracking-widest uppercase mt-1">Maghrebia Intelligence</p>
+              </div>
+            </div>
+            <div className="bg-emerald-50 px-4 py-2 rounded-2xl border border-emerald-100">
+              <p className="text-[10px] font-black text-emerald-600 tracking-tight flex items-center gap-2">
+                <Lucide.Shield className="w-3 h-3" /> WCAG COMPLIANT
+              </p>
+            </div>
           </div>
         </div>
       )}
