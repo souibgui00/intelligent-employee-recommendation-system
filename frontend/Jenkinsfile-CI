@@ -13,7 +13,15 @@ pipeline {
 
         stage('📥 Checkout') {
             steps {
+                cleanWs()
                 checkout scm
+                sh '''
+                    echo "=== Workspace ==="
+                    pwd
+                    ls -la
+                    echo "=== Frontend folder ==="
+                    ls -la frontend/ || echo "frontend/ missing"
+                '''
             }
         }
 
