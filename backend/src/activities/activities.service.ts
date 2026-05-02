@@ -564,14 +564,18 @@ export class ActivitiesService {
   async getRecommendationsForActivity(activityId: string, optionsOrPrompt: any = {}): Promise<any> {
     const options = typeof optionsOrPrompt === 'string' ? { prompt: optionsOrPrompt } : optionsOrPrompt;
     const prompt = options.prompt;
-
     const activity = await this.activityModel.findById(activityId).populate('requiredSkills.skillId').exec();
     if (!activity) {
       throw new NotFoundException(`Activity with ID ${activityId} not found`);
     }
 
-    const promptText = (prompt || '').trim();
+    let promptText = '';
     let promptSkills: string[] = [];
+    if (typeof options === 'string') {
+      promptText = options.trim();
+    } else if (options && typeof options === 'object' && options.prompt) {
+      promptText = options.prompt.trim();
+    }
     if (promptText) {
       const extracted = await this.extractSkillsFromDescription(promptText, activity.title || '');
       promptSkills = Array.from(
@@ -740,6 +744,7 @@ export class ActivitiesService {
         }
       }
 
+      // Use candidate.recommendation_reason if set, otherwise empty string
       return {
         userId:      candidate.employeeId,
         name:        candidate.name,
@@ -752,7 +757,7 @@ export class ActivitiesService {
         intentScore: Math.round(intentScore * 100) / 100,
         intent,
         yearsOfExperience: candidate.yearsOfExperience || (allUsers.find(e => e._id.toString() === candidate.employeeId)?.yearsOfExperience || 0),
-        recommendation_reason: candidate.recommendation_reason,
+        recommendation_reason: candidate.recommendation_reason || '',
         gap: candidate.skillGaps,
       };
     });
