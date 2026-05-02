@@ -121,4 +121,144 @@ export class PrioritizationService {
        reasoning: 'Calculated based on skill complexity and target audience.' 
      };
   }
+
+  inferIntent(type: string): string {
+    const mapping: Record<string, string> = {
+      training: 'development',
+      workshop: 'development',
+      project: 'performance',
+      assignment: 'performance',
+    };
+
+    return mapping[type] || 'balanced';
+  }
+
+  async identifySkillGaps(activityOrUserId: any, candidateOrActivityId: any): Promise<any[]> {
+    try {
+      if (
+        typeof activityOrUserId === 'string' &&
+        typeof candidateOrActivityId === 'string'
+      ) {
+        const [candidate, activity] = await Promise.all([
+          this.userModel.findById(activityOrUserId).populate('skills.skillId'),
+          this.activityModel.findById(candidateOrActivityId).populate('requiredSkills.skillId'),
+        ]);
+
+        if (!candidate || !activity) return [];
+
+        const required = (activity.requiredSkills || []).map((skill: any) =>
+          (skill.skillId?.name || skill.skillId?.toString() || skill.name || '')
+            .toString()
+            .trim(),
+        ).filter(Boolean);
+
+        const candidateSkills = (candidate.skills || []).map((skill: any) =>
+          (skill.skillId?.name || skill.skillId?.toString() || skill.name || '')
+            .toString()
+            .trim(),
+        ).filter(Boolean);
+
+        return required.filter((skill: string) => !candidateSkills.includes(skill));
+      }
+
+      const activity = activityOrUserId;
+      const candidate = candidateOrActivityId;
+      const required = (activity?.requiredSkills || []).map((skill: any) =>
+        (skill.skillId?.name || skill.skillId?.toString() || skill.name || '')
+          .toString()
+          .trim(),
+      ).filter(Boolean);
+
+      const candidateSkills = (candidate?.skills || []).map((skill: any) =>
+        (skill.skillId?.name || skill.skillId?.toString() || skill.name || '')
+          .toString()
+          .trim(),
+      ).filter(Boolean);
+
+      return required.filter((skill: string) => !candidateSkills.includes(skill));
+    } catch (error) {
+      return [];
+    }
+  }
+
+  applyIntentAwareScoring(candidates: any[], activity: any) {
+    const intent = activity?.intent || this.inferIntent(activity?.type);
+
+    return candidates.map((candidate: any) => {
+      let contextScore = 0;
+
+      if (intent === 'development') {
+        const gaps = Array.isArray(candidate.skillGaps) ? candidate.skillGaps.length : 0;
+        contextScore = Math.min(100, 10 + gaps * 10 + (candidate.globalScore || 0) * 0.1);
+      } else if (intent === 'performance') {
+        contextScore = Math.min(
+          100,
+          (candidate.matchPercentage || 0) * 0.6 + (candidate.globalScore || 0) * 0.4,
+        );
+      } else {
+        contextScore = (candidate.matchPercentage || 0) * 0.5 + (candidate.globalScore || 0) * 0.5;
+      }
+
+      return {
+        ...candidate,
+        intent,
+        contextScore,
+      };
+    });
+  }
+
+  resolveTies(candidates: any[]) {
+    return candidates.sort((a: any, b: any) => (b.contextScore || 0) - (a.contextScore || 0));
+  }
+
+  async weightSkillsByActivityImportance(activityId: string, importance: number): Promise<any> {
+    const activity = await this.activityModel.findById(activityId);
+    if (!activity) throw new NotFoundException('Activity not found');
+
+    const clampedImportance = Math.max(0.1, Math.min(2.0, importance));
+    const updatedSkills = (activity.requiredSkills || []).map((skill: any) => ({
+      ...skill,
+      weight: Math.round(Math.min(2.0, (skill.weight || 0.5) * clampedImportance) * 100) / 100,
+    }));
+
+    activity.requiredSkills = updatedSkills as any;
+    await activity.save();
+
+    return {
+      activityId,
+      importance: clampedImportance,
+      updatedSkills,
+    };
+  }
+
+  async getEmployeesBySkillLevel(activityId: string): Promise<any> {
+    const activity = await this.activityModel.findById(activityId);
+    if (!activity) throw new NotFoundException('Activity not found');
+
+    const requiredSkillIds = (activity.requiredSkills || [])
+      .map((skill: any) => skill.skillId?.toString())
+      .filter(Boolean);
+
+    const employees = await this.userModel
+      .find({ role: { $regex: /^employee$/i } })
+      .select('name skills')
+      .lean();
+
+    const grouped: Record<string, { beginner: any[]; intermediate: any[]; advanced: any[]; expert: any[]; missing: any[] }> = {};
+
+    for (const skillId of requiredSkillIds) {
+      grouped[skillId] = { beginner: [], intermediate: [], advanced: [], expert: [], missing: [] };
+
+      for (const employee of employees as any[]) {
+        const match = (employee.skills || []).find(
+          (skill: any) => skill.skillId?.toString() === skillId,
+        );
+        const level: string = match?.level || 'missing';
+        const bucket = grouped[skillId][level as keyof typeof grouped[string]] || grouped[skillId].missing;
+        bucket.push({ userId: employee._id.toString(), name: employee.name });
+      }
+    }
+
+    return grouped;
+  }
 }
