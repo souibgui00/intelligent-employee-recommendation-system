@@ -17,7 +17,6 @@ pipeline {
             }
         }
 
-<<<<<<< HEAD
         stage('📦 Install') {
             steps {
                 dir('frontend') {
@@ -37,27 +36,6 @@ pipeline {
                 }
             }
         }
-=======
-       stage('📦 Install') {
-    steps {
-        dir('frontend') {
-            sh 'rm -rf node_modules'
-            retry(3) {
-                sh 'npm install --prefer-offline --fetch-timeout=600000 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000'
-            }
-        }
-    }
-}
-
-        stage('🧪 Tests') {
-    steps {
-        dir('frontend') {
-            sh 'npm test -- --watchAll=false --coverage'
-            sh 'tr "\\\\" "/" < coverage/lcov.info > coverage/lcov.info.tmp && mv coverage/lcov.info.tmp coverage/lcov.info'
-        }
-    }
-}
->>>>>>> dd895aa (reverting old work)
 
         stage('🏗️ Build') {
             steps {
@@ -67,11 +45,7 @@ pipeline {
             }
         }
 
-<<<<<<< HEAD
         stage('🔍 SonarQube Analysis') {
-=======
-        stage('SonarQube Analysis') {
->>>>>>> dd895aa (reverting old work)
             steps {
                 dir('frontend') {
                     sh '''/opt/sonar-scanner/bin/sonar-scanner \
@@ -88,51 +62,19 @@ pipeline {
 
         stage('🐳 Docker Build') {
             steps {
-                dir('frontend') {
-                    sh '''
-                        docker build -t mon-frontend:${BUILD_NUMBER} .
-                        docker tag mon-frontend:${BUILD_NUMBER} mon-frontend:latest
-                    '''
-                }
+                sh '''
+                    docker build -t mon-frontend:${BUILD_NUMBER} -f frontend/Dockerfile frontend/
+                    docker tag mon-frontend:${BUILD_NUMBER} mon-frontend:latest
+                '''
             }
         }
 
-<<<<<<< HEAD
-=======
-        stage('🔒 Trivy Scan') {
-            steps {
-                sh '''
-                    trivy image \
-                        --cache-dir /var/lib/jenkins/.cache/trivy \
-                        --exit-code 0 \
-                        --severity HIGH,CRITICAL \
-                        --format table \
-                        mon-frontend:${BUILD_NUMBER}
-                '''
-            }
-            post {
-                always {
-                    sh '''
-                        trivy image \
-                            --cache-dir /var/lib/jenkins/.cache/trivy \
-                            --exit-code 0 \
-                            --severity HIGH,CRITICAL \
-                            --format json \
-                            --output trivy-frontend-report.json \
-                            mon-frontend:${BUILD_NUMBER}
-                    '''
-                    archiveArtifacts artifacts: 'trivy-frontend-report.json', fingerprint: true
-                }
-            }
-        }
->>>>>>> dd895aa (reverting old work)
     }
 
     post {
         success {
             build job: 'CD-Frontend', wait: false
         }
-<<<<<<< HEAD
         always {
             echo '🏁 Frontend CI pipeline completed'
         }
@@ -141,7 +83,3 @@ pipeline {
         }
     }
 }
-=======
-    }
-}
->>>>>>> dd895aa (reverting old work)
