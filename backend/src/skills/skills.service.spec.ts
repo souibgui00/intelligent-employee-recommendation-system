@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
+<<<<<<< HEAD
 import { NotFoundException } from '@nestjs/common';
+=======
+>>>>>>> dd895aa (reverting old work)
 import { SkillsService } from './skills.service';
 import { Skill } from './schema/skill.schema';
 import { Types } from 'mongoose';
@@ -8,6 +11,7 @@ import { Types } from 'mongoose';
 describe('SkillsService', () => {
   let service: SkillsService;
 
+<<<<<<< HEAD
   const mockSkillId = new Types.ObjectId().toHexString();
 
   const mockSkill = {
@@ -21,6 +25,8 @@ describe('SkillsService', () => {
     hierarchie_eval: 4,
   };
 
+=======
+>>>>>>> dd895aa (reverting old work)
   const mockSkillModel = {
     find: jest.fn(),
     findById: jest.fn(),
@@ -29,7 +35,10 @@ describe('SkillsService', () => {
     findByIdAndUpdate: jest.fn(),
     findByIdAndDelete: jest.fn(),
     countDocuments: jest.fn(),
+<<<<<<< HEAD
     aggregate: jest.fn(),
+=======
+>>>>>>> dd895aa (reverting old work)
     db: {
       model: jest.fn().mockReturnValue({
         find: jest.fn().mockReturnValue({
@@ -54,14 +63,18 @@ describe('SkillsService', () => {
     service = module.get<SkillsService>(SkillsService);
   });
 
+<<<<<<< HEAD
   afterEach(() => {
     jest.clearAllMocks();
   });
 
+=======
+>>>>>>> dd895aa (reverting old work)
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
+<<<<<<< HEAD
   describe('create', () => {
     it('should have create method', () => {
       expect(typeof service.create).toBe('function');
@@ -116,10 +129,21 @@ describe('SkillsService', () => {
       const result = await service.findOne(new Types.ObjectId().toHexString());
 
       expect(result).toBeNull();
+=======
+  describe('findAll', () => {
+    it('should return an array of skills', async () => {
+      mockSkillModel.find.mockReturnValue({
+        exec: jest.fn().mockResolvedValue([{ name: 'JavaScript' }]),
+      });
+      const result = await service.findAll();
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('JavaScript');
+>>>>>>> dd895aa (reverting old work)
     });
   });
 
   describe('findByName', () => {
+<<<<<<< HEAD
     it('should find skill by name case-insensitive', async () => {
       mockSkillModel.findOne.mockReturnValue({
         exec: jest.fn().mockResolvedValue(mockSkill),
@@ -196,6 +220,14 @@ describe('SkillsService', () => {
   describe('getGlobalSkillsDashboard', () => {
     it('should have getGlobalSkillsDashboard method', () => {
       expect(typeof service.getGlobalSkillsDashboard).toBe('function');
+=======
+    it('should find a skill by name case-insensitive', async () => {
+      mockSkillModel.findOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue({ name: 'JavaScript' }),
+      });
+      const result = await service.findByName('javascript');
+      expect(result?.name).toBe('JavaScript');
+>>>>>>> dd895aa (reverting old work)
     });
   });
 });

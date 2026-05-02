@@ -121,6 +121,7 @@ export class PrioritizationService {
        reasoning: 'Calculated based on skill complexity and target audience.' 
      };
   }
+<<<<<<< HEAD
 
   // --- Public helpers used by other services and tests ---
   inferIntent(type: string): string {
@@ -234,4 +235,6 @@ export class PrioritizationService {
 
     return grouped;
   }
+=======
+>>>>>>> dd895aa (reverting old work)
 }

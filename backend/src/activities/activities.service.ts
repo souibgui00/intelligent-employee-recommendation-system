@@ -646,10 +646,21 @@ export class ActivitiesService {
     };
   }
 
+<<<<<<< HEAD
   async getRecommendationsForActivity(activityId: string, optionsOrPrompt: any = {}): Promise<any> {
     const options = typeof optionsOrPrompt === 'string' ? { prompt: optionsOrPrompt } : optionsOrPrompt;
     const prompt = options.prompt;
     const activity = await this.activityModel.findById(activityId).populate('requiredSkills.skillId').exec();
+=======
+  async getRecommendationsForActivity(
+    activityId: string,
+    options: any = {},
+  ): Promise<any> {
+    const activity = await this.activityModel
+      .findById(activityId)
+      .populate('requiredSkills.skillId')
+      .exec();
+>>>>>>> dd895aa (reverting old work)
     if (!activity) {
       throw new NotFoundException(`Activity with ID ${activityId} not found`);
     }

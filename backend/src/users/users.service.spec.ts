@@ -1,15 +1,22 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
+<<<<<<< HEAD
 import { NotFoundException, UnauthorizedException, BadRequestException } from '@nestjs/common';
+=======
+>>>>>>> dd895aa (reverting old work)
 import { UsersService } from './users.service';
 import { EmailService } from '../common/services/email.service';
 import { Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
+<<<<<<< HEAD
 jest.mock('bcrypt', () => ({ compare: jest.fn(), hash: jest.fn(), genSalt: jest.fn().mockResolvedValue('salt') }));
+=======
+>>>>>>> dd895aa (reverting old work)
 
 describe('UsersService', () => {
   let service: UsersService;
 
+<<<<<<< HEAD
   const mockUserId = new Types.ObjectId().toHexString();
   const mockSkillId = new Types.ObjectId().toHexString();
 
@@ -43,11 +50,29 @@ describe('UsersService', () => {
     deleteOne: jest.fn(),
   };
 
+=======
+  const mockUserModel = function(data: any) {
+    return {
+      ...data,
+      save: jest.fn().mockResolvedValue({
+        ...data,
+        toObject: jest.fn().mockReturnValue(data),
+      }),
+    };
+  };
+
+  mockUserModel.findOne = jest.fn();
+  mockUserModel.find = jest.fn();
+  mockUserModel.findById = jest.fn();
+  mockUserModel.findByIdAndUpdate = jest.fn();
+
+>>>>>>> dd895aa (reverting old work)
   const mockEmailService = {
     sendNewUserCredentials: jest.fn().mockResolvedValue(true),
   };
 
   beforeEach(async () => {
+<<<<<<< HEAD
     jest.clearAllMocks();
 
     const module: TestingModule = await Test.createTestingModule({
@@ -55,12 +80,26 @@ describe('UsersService', () => {
         UsersService,
         { provide: getModelToken('User'), useValue: mockUserModel },
         { provide: EmailService, useValue: mockEmailService },
+=======
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        UsersService,
+        {
+          provide: getModelToken('User'),
+          useValue: mockUserModel,
+        },
+        {
+          provide: EmailService,
+          useValue: mockEmailService,
+        },
+>>>>>>> dd895aa (reverting old work)
       ],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
   });
 
+<<<<<<< HEAD
   function chainable(result: any) {
     return {
       populate: jest.fn().mockReturnThis(),
@@ -71,10 +110,13 @@ describe('UsersService', () => {
     };
   }
 
+=======
+>>>>>>> dd895aa (reverting old work)
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
+<<<<<<< HEAD
   it('should have basic methods', () => {
     expect(typeof service.create).toBe('function');
     expect(typeof service.findOne).toBe('function');
@@ -95,10 +137,35 @@ describe('UsersService', () => {
     it('throws NotFoundException when not found', async () => {
       mockUserModel.findById.mockReturnValue(chainable(null));
       await expect(service.findOne('nope')).rejects.toThrow(NotFoundException);
+=======
+  describe('generateMatricule', () => {
+    it('should generate an EMP prefix for employees', () => {
+      // Accessing private method for testing
+      const matricule = (service as any).generateMatricule('employee');
+      expect(matricule).toMatch(/^EMP-\d{4}-\d{4}$/);
+    });
+
+    it('should generate an MGR prefix for managers', () => {
+      const matricule = (service as any).generateMatricule('manager');
+      expect(matricule).toMatch(/^MGR-\d{4}-\d{4}$/);
+    });
+  });
+
+  describe('computeWeightedSkillScore', () => {
+    it('should calculate weighted scores correctly', () => {
+      const skills = [
+        { skillId: { type: 'knowledge' }, score: 80 },
+        { skillId: { type: 'know-how' }, score: 60 },
+      ];
+      const result = (service as any).computeWeightedSkillScore(skills);
+      expect(result.weightedScore).toBeDefined();
+      expect(result.categoryCounts.knowledge).toBe(1);
+>>>>>>> dd895aa (reverting old work)
     });
   });
 
   describe('findByEmail', () => {
+<<<<<<< HEAD
     it('returns user by email', async () => {
       mockUserModel.findOne.mockReturnValue(chainable(mockUser));
       const res = await service.findByEmail(mockUser.email);
@@ -168,6 +235,17 @@ describe('UsersService', () => {
   describe('invalidateUsersCache', () => {
     it('runs without error', () => {
       expect(() => service.invalidateUsersCache()).not.toThrow();
+=======
+    it('should find user by email', async () => {
+      const email = 'test@example.com';
+      mockUserModel.findOne.mockReturnValue({
+        populate: jest.fn().mockResolvedValue({ email }),
+      });
+
+      const result = await service.findByEmail(email);
+      expect(result).toBeDefined();
+      expect(result?.email).toBe(email);
+>>>>>>> dd895aa (reverting old work)
     });
   });
 });

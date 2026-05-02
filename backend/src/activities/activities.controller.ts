@@ -53,7 +53,11 @@ export class ActivitiesController {
     console.log(
       `[ActivitiesController] Found ${results.length} activities for user ${req.user.userId} (Role: ${req.user.role})`,
     );
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> dd895aa (reverting old work)
     if (limit) {
       const limitNum = parseInt(limit, 10);
       return results.slice(0, limitNum);
@@ -84,7 +88,10 @@ export class ActivitiesController {
       body.title,
     );
   }
+<<<<<<< HEAD
 
+=======
+>>>>>>> dd895aa (reverting old work)
   @Roles(Role.ADMIN, Role.MANAGER, Role.EMPLOYEE, Role.HR)
   @Get('recommendations/:userId')
   getRecommendations(@Param('userId') userId: string) {
