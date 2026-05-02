@@ -39,9 +39,9 @@ export function ProfileSettings() {
     const nameId = "profile-name"
     const emailId = "profile-email"
     const phoneId = "profile-phone"
-    const currentPasswordId = "current-password"
-    const newPasswordId = "new-password"
-    const confirmPasswordId = "confirm-password"
+    const currentPasswordId = "current-password-field"
+    const newPasswordId = "new-password-field"
+    const confirmPasswordId = "confirm-password-field"
 
     const handleUpdateProfile = async (e) => {
         e.preventDefault()

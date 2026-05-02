@@ -201,12 +201,15 @@ class RecommendRequest(BaseModel):
     activity: ActivityData
     employees: List[EmployeeData]
     intent: str = "balanced"
+    limit: Optional[int] = 10
 
 class EmployeeScore(BaseModel):
     userId: str
     nlpScore: float
     rfScore: float
     finalScore: float
+    reasoning: Optional[str] = None
+    needsDevelopment: Optional[List[str]] = []
 
 class RecommendResponse(BaseModel):
     activityId: str
@@ -488,6 +491,31 @@ def recommend(request: RecommendRequest):
         ))
 
     scores.sort(key=lambda x: x.finalScore, reverse=True)
+    
+    # 5. Apply Limit
+    if request.limit and request.limit > 0:
+        scores = scores[:request.limit]
+
+    # 6. Final Enrichment (Reasoning & Skill Gaps)
+    # This ensures we return human-readable names and helpful feedback
+    for score_obj in scores:
+        emp = next(e for e in request.employees if e.userId == score_obj.userId)
+        
+        # Reasoning
+        reason = f"Highly compatible for '{request.activity.title}'."
+        if score_obj.nlpScore > 0.7:
+            reason = f"Excellent skill alignment with {request.activity.title} requirements."
+        elif score_obj.rfScore > 0.8:
+            reason = "High success probability based on professional trajectory."
+            
+        score_obj.reasoning = reason
+        
+        # Skill Gaps (Human Readable)
+        req_skills = [s.lower() for s in request.activity.requiredSkills]
+        emp_skills = [s.lower() for s in emp.skills]
+        gaps = [s.capitalize() for s in req_skills if s not in emp_skills]
+        score_obj.needsDevelopment = gaps[:3]
+
     return RecommendResponse(activityId=request.activity.activityId, scores=scores)
 
 

@@ -1,8 +1,8 @@
 pipeline {
     agent any
 
-    environment {
-        PATH = "/usr/bin:/usr/local/bin:${env.PATH}"
+    tools {
+        nodejs 'NodeJS-20'
     }
 
     stages {
@@ -10,35 +10,31 @@ pipeline {
         stage('📥 Checkout') {
             steps {
                 checkout scm
-                echo 'Code recupere !'
-            }
-        }
-
-        stage('🔍 Verifier environnement') {
-            steps {
-                sh '''
-                    which node
-                    node --version
-                    node -e "console.log(process.platform)"
-                '''
             }
         }
 
         stage('📦 Install') {
             steps {
-                dir('backend') {
-                    sh '''
-                        export HOME=/tmp
-                        /usr/bin/npm install
-                    '''
+                dir('frontend') {
+                    retry(3) {
+                        sh 'npm install --prefer-offline --fetch-timeout=600000'
+                    }
                 }
             }
         }
 
         stage('🧪 Tests') {
             steps {
-                dir('backend') {
-                    sh '/usr/bin/npm test || true'
+                dir('frontend') {
+                    sh 'npm test -- --watchAll=false --coverage'
+                }
+            }
+        }
+
+        stage('🏗️ Build') {
+            steps {
+                dir('frontend') {
+                    sh 'npx vite build'
                 }
             }
         }
@@ -50,17 +46,17 @@ pipeline {
                         -Dsonar.projectKey=backend \
                         -Dsonar.sources=. \
                         -Dsonar.host.url=http://localhost:9000 \
-                        -Dsonar.login=squ_f8c266c651590adc0b9aa62081ae2795d737b2fe'''
+                        -Dsonar.login=squ_3638fe03cb73ea0e15f747beb004d1493dafa066'''
                 }
             }
         }
 
         stage('🐳 Docker Build') {
             steps {
-                dir('backend') {
+                dir('frontend') {
                     sh '''
-                        docker build -t mon-backend:${BUILD_NUMBER} .
-                        docker tag mon-backend:${BUILD_NUMBER} mon-backend:latest
+                        docker build -t mon-frontend:${BUILD_NUMBER} .
+                        docker tag mon-frontend:${BUILD_NUMBER} mon-frontend:latest
                     '''
                 }
             }
@@ -74,7 +70,7 @@ pipeline {
                         --exit-code 0 \
                         --severity HIGH,CRITICAL \
                         --format table \
-                        mon-backend:${BUILD_NUMBER}
+                        mon-frontend:${BUILD_NUMBER}
                 '''
             }
             post {
@@ -85,10 +81,10 @@ pipeline {
                             --exit-code 0 \
                             --severity HIGH,CRITICAL \
                             --format json \
-                            --output trivy-backend-report.json \
-                            mon-backend:${BUILD_NUMBER}
+                            --output trivy-frontend-report.json \
+                            mon-frontend:${BUILD_NUMBER}
                     '''
-                    archiveArtifacts artifacts: 'trivy-backend-report.json', fingerprint: true
+                    archiveArtifacts artifacts: 'trivy-frontend-report.json', fingerprint: true
                 }
             }
         }
@@ -96,11 +92,7 @@ pipeline {
 
     post {
         success {
-            echo '✅ CI Backend réussi !'
-            build job: 'CD-Backend', wait: false
-        }
-        failure {
-            echo '❌ CI Backend échoué !'
+            build job: 'CD-Frontend', wait: false
         }
     }
 }

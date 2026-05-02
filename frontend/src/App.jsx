@@ -34,7 +34,7 @@ const EmployeeApp = lazy(() => import("./EmployeeApp"))
 const ManagerApp = lazy(() => import("./ManagerApp"))
 const AdminApp = lazy(() => import("./AdminApp"))
 const HRApp = lazy(() => import("./HRApp"))
-const AccessibilityWidget = lazy(() => import("../components/accessibility/AccessibilityWidget").then((m) => ({ default: m.AccessibilityWidget })))
+const AccessibilityWidget = lazy(() => import("./components/accessibility/AccessibilityWidget").then((m) => ({ default: m.AccessibilityWidget })))
 const FaceIdScanner = lazy(() => import("../components/auth/face-id-scanner").then((m) => ({ default: m.FaceIdScanner })))
 
 // PERF: Optionally, batch user context fetch here if needed for all roles
