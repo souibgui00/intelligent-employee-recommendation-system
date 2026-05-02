@@ -41,9 +41,9 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                dir('frontend') {
+                dir('backend') {
                     sh '''/opt/sonar-scanner/bin/sonar-scanner \
-                        -Dsonar.projectKey=frontend \
+                        -Dsonar.projectKey=backend \
                         -Dsonar.sources=. \
                         -Dsonar.host.url=http://localhost:9000 \
                         -Dsonar.login=squ_3638fe03cb73ea0e15f747beb004d1493dafa066'''

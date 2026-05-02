@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1777677053593" clover="3.2.0">
-  <project timestamp="1777677053593" name="All files">
+<coverage generated="1777718346586" clover="3.2.0">
+  <project timestamp="1777718346587" name="All files">
     <metrics statements="158" coveredstatements="156" conditionals="95" coveredconditionals="80" methods="30" coveredmethods="28" elements="283" coveredelements="264" complexity="0" loc="158" ncloc="158" packages="2" files="3" classes="3"/>
     <package name="components">
       <metrics statements="71" coveredstatements="69" conditionals="49" coveredconditionals="47" methods="18" coveredmethods="16"/>
-      <file name="Dashboard.jsx" path="C:\Users\MSI\Desktop\pi\intelligent-employee-recommendation-system\frontend\src\components\Dashboard.jsx">
+      <file name="Dashboard.jsx" path="C:\Users\monta\Downloads\pi\intelligent-employee-recommendation-system-main\frontend\src\components\Dashboard.jsx">
         <metrics statements="29" coveredstatements="27" conditionals="24" coveredconditionals="23" methods="10" coveredmethods="8"/>
         <line num="5" count="1" type="stmt"/>
         <line num="6" count="23" type="stmt"/>
@@ -36,7 +36,7 @@
         <line num="56" count="5" type="stmt"/>
         <line num="65" count="5" type="stmt"/>
       </file>
-      <file name="LoginForm.jsx" path="C:\Users\MSI\Desktop\pi\intelligent-employee-recommendation-system\frontend\src\components\LoginForm.jsx">
+      <file name="LoginForm.jsx" path="C:\Users\monta\Downloads\pi\intelligent-employee-recommendation-system-main\frontend\src\components\LoginForm.jsx">
         <metrics statements="42" coveredstatements="42" conditionals="25" coveredconditionals="24" methods="8" coveredmethods="8"/>
         <line num="7" count="1" type="stmt"/>
         <line num="8" count="9" type="cond" truecount="3" falsecount="0"/>
@@ -84,7 +84,7 @@
     </package>
     <package name="contexts">
       <metrics statements="87" coveredstatements="87" conditionals="46" coveredconditionals="33" methods="12" coveredmethods="12"/>
-      <file name="AuthContext.jsx" path="C:\Users\MSI\Desktop\pi\intelligent-employee-recommendation-system\frontend\src\contexts\AuthContext.jsx">
+      <file name="AuthContext.jsx" path="C:\Users\monta\Downloads\pi\intelligent-employee-recommendation-system-main\frontend\src\contexts\AuthContext.jsx">
         <metrics statements="87" coveredstatements="87" conditionals="46" coveredconditionals="33" methods="12" coveredmethods="12"/>
         <line num="4" count="2" type="stmt"/>
         <line num="6" count="2" type="stmt"/>

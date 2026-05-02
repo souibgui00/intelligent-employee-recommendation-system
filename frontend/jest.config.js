@@ -7,7 +7,7 @@ export default {
     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
   },
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@/(.*)$': '<rootDir>/$1',
   },
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.js'],
   collectCoverageFrom: [
