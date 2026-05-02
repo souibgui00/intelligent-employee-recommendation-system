@@ -33,7 +33,7 @@ pipeline {
     steps {
         dir('frontend') {
             sh 'npm test -- --watchAll=false --coverage'
-            sh 'sed -i "s|\\\\|/|g" coverage/lcov.info'
+            sh 'tr "\\\\" "/" < coverage/lcov.info > coverage/lcov.info.tmp && mv coverage/lcov.info.tmp coverage/lcov.info'
         }
     }
 }
