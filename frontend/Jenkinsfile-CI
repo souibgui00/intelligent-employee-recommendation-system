@@ -60,16 +60,14 @@ pipeline {
             }
         }
 
-        stage('🐳 Docker Build') {
-            steps {
-                dir('frontend') {
-                    sh '''
-                        docker build -t mon-frontend:${BUILD_NUMBER} .
-                        docker tag mon-frontend:${BUILD_NUMBER} mon-frontend:latest
-                    '''
-                }
-            }
-        }
+stage('🐳 Docker Build') {
+    steps {
+        sh '''
+            docker build -t mon-frontend:${BUILD_NUMBER} -f frontend/Dockerfile frontend/
+            docker tag mon-frontend:${BUILD_NUMBER} mon-frontend:latest
+        '''
+    }
+}
 
         stage('🔒 Trivy Scan') {
             steps {
