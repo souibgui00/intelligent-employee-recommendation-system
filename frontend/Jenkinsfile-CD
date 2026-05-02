@@ -70,6 +70,22 @@ pipeline {
         }
 
     }
+    stage('📋 Verify Checkout') {
+    steps {
+        sh '''
+            echo "=== PWD ==="
+            pwd
+            echo "=== ROOT FILES ==="
+            ls -la
+            echo "=== FRONTEND FILES ==="
+            ls -la frontend/ || echo "frontend/ does not exist"
+            echo "=== GIT LOG ==="
+            git log --oneline -5
+            echo "=== JENKINSFILE-CD CONTENT ==="
+            cat frontend/Jenkinsfile-CD
+        '''
+    }
+}
 
     post {
         success {
