@@ -17,17 +17,16 @@ pipeline {
             }
         }
 
-        stage('📦 Install') {
-            steps {
-                dir('frontend') {
-                    sh 'rm -rf node_modules'
-                    sh 'npm cache clean --force'
-                    retry(3) {
-                        sh 'npm install --fetch-timeout=600000'
-                    }
-                }
+       stage('📦 Install') {
+    steps {
+        dir('frontend') {
+            sh 'rm -rf node_modules'
+            retry(3) {
+                sh 'npm install --prefer-offline --fetch-timeout=600000 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000'
             }
         }
+    }
+}
 
         stage('🧪 Tests') {
     steps {
