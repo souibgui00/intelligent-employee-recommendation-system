@@ -170,8 +170,8 @@ export class PrioritizationService {
     return candidates.sort((a: any, b: any) => (b.contextScore || 0) - (a.contextScore || 0));
   }
 
-  async weightSkillsByActivityImportance(activityId: string): Promise<any> {
-    const activity = await this.activityModel.findById(activityId).lean();
+async weightSkillsByActivityImportance(activityId: string, importance?: any): Promise<any> {
+      const activity = await this.activityModel.findById(activityId).lean();
     if (!activity) throw new Error('Activity not found');
     
     const requiredSkills = (activity as any).requiredSkills || [];
