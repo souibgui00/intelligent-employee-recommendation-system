@@ -175,7 +175,7 @@ describe('AssignmentsService', () => {
       };
       mockAssignmentModel.findById.mockReturnValue(chainable(rejectAssignment));
       const res = await service.employeeReject(mockAssignmentId, mockUserId, 'Busy');
-      expect(res.status).toBe('rejected');
+      expect(res.status).toBe('declined');
     });
   });
 
