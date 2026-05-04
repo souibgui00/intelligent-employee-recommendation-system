@@ -8,7 +8,7 @@ describe('AuditService', () => {
 
   const mockSave = jest.fn();
 
-  function MockAuditModel(data: any) {
+  function MockAuditModel(this: any, data: any) {
     this.save = mockSave;
   }
   

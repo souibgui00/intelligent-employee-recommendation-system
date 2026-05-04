@@ -27,7 +27,7 @@ describe('AssignmentsService', () => {
     managerId: mockManagerId,
     status: 'pending',
     type: 'recommendation',
-    save: jest.fn().mockImplementation(function () {
+    save: jest.fn().mockImplementation(function (this: any) {
       return Promise.resolve(this);
     }),
   };
@@ -42,7 +42,7 @@ describe('AssignmentsService', () => {
     return p;
   }
 
-  const mockAssignmentModel: any = jest.fn().mockImplementation((dto) => ({
+  const mockAssignmentModel: any = jest.fn().mockImplementation((dto: any) => ({
     ...dto,
     _id: mockAssignmentId,
     save: jest.fn().mockResolvedValue({ _id: mockAssignmentId, ...dto }),
@@ -143,7 +143,7 @@ describe('AssignmentsService', () => {
         managerId: { _id: mockManagerId, name: 'Manager' },
         activityId: { _id: mockActivityId, title: 'Test' },
         userId: { _id: mockUserId, name: 'User' },
-        save: jest.fn().mockImplementation(function () {
+        save: jest.fn().mockImplementation(function (this: any) {
           return Promise.resolve(this);
         }),
       };
@@ -169,7 +169,7 @@ describe('AssignmentsService', () => {
     it('employeeReject updates status', async () => {
       const rejectAssignment = {
         ...mockAssignment,
-        save: jest.fn().mockImplementation(function () {
+        save: jest.fn().mockImplementation(function (this: any) {
           return Promise.resolve(this);
         }),
       };
@@ -185,9 +185,213 @@ describe('AssignmentsService', () => {
       expect(mockAssignmentModel.find).toHaveBeenCalled();
     });
 
+    it('findAll with pagination and select', async () => {
+      await service.findAll({ page: 2, limit: 10, select: ['_id', 'status'] });
+      expect(mockAssignmentModel.find).toHaveBeenCalled();
+    });
+
     it('findByRecipient', async () => {
       await service.findByRecipient(mockUserId);
       expect(mockAssignmentModel.find).toHaveBeenCalled();
+    });
+
+    it('findByRecipient with pagination', async () => {
+      await service.findByRecipient(mockUserId, { page: 1, limit: 20 });
+      expect(mockAssignmentModel.find).toHaveBeenCalled();
+    });
+
+    it('findByAssigner', async () => {
+      await service.findByAssigner(mockManagerId);
+      expect(mockAssignmentModel.find).toHaveBeenCalled();
+    });
+
+    it('findByAssigner with pagination and select', async () => {
+      await service.findByAssigner(mockManagerId, { page: 2, limit: 15, select: ['status'] });
+      expect(mockAssignmentModel.find).toHaveBeenCalled();
+    });
+
+    it('findRecommendationsForManager', async () => {
+      await service.findRecommendationsForManager(mockManagerId);
+      expect(mockAssignmentModel.find).toHaveBeenCalled();
+    });
+
+    it('findRecommendationsForManager filters by type recommendation', async () => {
+      mockAssignmentModel.find.mockReturnValue(chainable([{ type: 'recommendation', managerId: mockManagerId }]));
+      const res = await service.findRecommendationsForManager(mockManagerId);
+      expect(mockAssignmentModel.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          managerId: expect.any(Object),
+          type: 'recommendation',
+        })
+      );
+    });
+  });
+
+  describe('forwardToDepartmentManager', () => {
+    it('routes to forwardToDepartmentManagers', async () => {
+      const res = await service.forwardToDepartmentManager({
+        candidateIds: [mockUserId],
+        activityId: mockActivityId,
+      }, mockRequesterId);
+      expect(res.totalForwarded).toBe(1);
+    });
+  });
+
+  describe('remove', () => {
+    it('deletes an assignment', async () => {
+      await service.remove(mockAssignmentId);
+      expect(mockAssignmentModel.findByIdAndDelete).toHaveBeenCalledWith(mockAssignmentId);
+    });
+  });
+
+  describe('updateStatus - additional cases', () => {
+    it('rejects if not found', async () => {
+      mockAssignmentModel.findById.mockReturnValue(chainable(null));
+      await expect(service.updateStatus(mockAssignmentId, 'accepted', mockManagerId)).rejects.toThrow(NotFoundException);
+    });
+
+    it('rejects with rejected status without notification', async () => {
+      const assignmentWithDetails = {
+        ...mockAssignment,
+        managerId: { _id: mockManagerId, name: 'Manager' },
+        activityId: { _id: mockActivityId, title: 'Test' },
+        userId: { _id: mockUserId, name: 'User' },
+        save: jest.fn().mockImplementation(function (this: any) {
+          this.status = 'rejected';
+          return Promise.resolve(this);
+        }),
+      };
+      mockAssignmentModel.findById.mockReturnValue(chainable(assignmentWithDetails));
+      
+      const res = await service.updateStatus(mockAssignmentId, 'rejected', mockManagerId);
+      expect(res.status).toBe('rejected');
+      expect(mockNotificationsService.create).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('employeeAccept - additional cases', () => {
+    it('throws if assignment not found', async () => {
+      mockAssignmentModel.findById.mockReturnValue(chainable(null));
+      await expect(service.employeeAccept(mockAssignmentId, mockUserId)).rejects.toThrow(NotFoundException);
+    });
+
+    it('throws if wrong employee', async () => {
+      mockAssignmentModel.findById.mockReturnValue(chainable(mockAssignment));
+      const wrongUserId = new Types.ObjectId().toHexString();
+      await expect(service.employeeAccept(mockAssignmentId, wrongUserId)).rejects.toThrow(ForbiddenException);
+    });
+
+    it('handles duplicate participation error gracefully', async () => {
+      mockAssignmentModel.findById.mockReturnValue(chainable(mockAssignment));
+      mockParticipationsService.create.mockRejectedValueOnce({ code: 11000, message: 'already exists' });
+      const res = await service.employeeAccept(mockAssignmentId, mockUserId);
+      expect(res).toBeDefined();
+    });
+  });
+
+  describe('employeeReject - additional cases', () => {
+    it('throws if assignment not found', async () => {
+      mockAssignmentModel.findById.mockReturnValue(chainable(null));
+      await expect(service.employeeReject(mockAssignmentId, mockUserId)).rejects.toThrow(NotFoundException);
+    });
+
+    it('throws if wrong employee', async () => {
+      mockAssignmentModel.findById.mockReturnValue(chainable(mockAssignment));
+      const wrongUserId = new Types.ObjectId().toHexString();
+      await expect(service.employeeReject(mockAssignmentId, wrongUserId)).rejects.toThrow(ForbiddenException);
+    });
+
+    it('includes reason in rejected assignment', async () => {
+      const rejectAssignment = {
+        ...mockAssignment,
+        save: jest.fn().mockImplementation(function (this: any) {
+          return Promise.resolve(this);
+        }),
+      };
+      mockAssignmentModel.findById.mockReturnValue(chainable(rejectAssignment));
+      const res = await service.employeeReject(mockAssignmentId, mockUserId, 'Personal reasons');
+      expect(res.reason).toBe('Personal reasons');
+    });
+
+    it('sets default reason if none provided', async () => {
+      const rejectAssignment = {
+        ...mockAssignment,
+        save: jest.fn().mockImplementation(function (this: any) {
+          return Promise.resolve(this);
+        }),
+      };
+      mockAssignmentModel.findById.mockReturnValue(chainable(rejectAssignment));
+      const res = await service.employeeReject(mockAssignmentId, mockUserId);
+      expect(res.reason).toBe('Declined by employee');
+    });
+  });
+
+  describe('forwardToManager - additional cases', () => {
+    it('throws if activity not found', async () => {
+      mockActivitiesService.findOne.mockResolvedValueOnce(null);
+      await expect(service.forwardToManager({
+        candidateIds: [mockUserId],
+        activityId: mockActivityId,
+        managerId: mockManagerId,
+      }, mockRequesterId)).rejects.toThrow(NotFoundException);
+    });
+
+    it('throws if activity not approved', async () => {
+      mockActivitiesService.findOne.mockResolvedValueOnce({ workflowStatus: 'pending' });
+      await expect(service.forwardToManager({
+        candidateIds: [mockUserId],
+        activityId: mockActivityId,
+        managerId: mockManagerId,
+      }, mockRequesterId)).rejects.toThrow(BadRequestException);
+    });
+
+    it('throws if manager not found', async () => {
+      mockUsersService.findOne.mockResolvedValueOnce(null);
+      await expect(service.forwardToManager({
+        candidateIds: [mockUserId],
+        activityId: mockActivityId,
+        managerId: mockManagerId,
+      }, mockRequesterId)).rejects.toThrow(NotFoundException);
+    });
+
+    it('throws if target user is not a manager', async () => {
+      mockUsersService.findOne.mockResolvedValueOnce({ _id: mockManagerId, role: Role.EMPLOYEE });
+      await expect(service.forwardToManager({
+        candidateIds: [mockUserId],
+        activityId: mockActivityId,
+        managerId: mockManagerId,
+      }, mockRequesterId)).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('forwardToDepartmentManagers - additional cases', () => {
+    it('throws if activity not found', async () => {
+      mockActivitiesService.findOne.mockResolvedValueOnce(null);
+      await expect(service.forwardToDepartmentManagers({
+        candidateIds: [mockUserId],
+        activityId: mockActivityId,
+      }, mockRequesterId)).rejects.toThrow(NotFoundException);
+    });
+
+    it('throws if activity not approved', async () => {
+      mockActivitiesService.findOne.mockResolvedValueOnce({ workflowStatus: 'rejected' });
+      await expect(service.forwardToDepartmentManagers({
+        candidateIds: [mockUserId],
+        activityId: mockActivityId,
+      }, mockRequesterId)).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('create - additional cases', () => {
+    it('throws if activity not found', async () => {
+      mockActivitiesService.findOne.mockResolvedValueOnce(null);
+      await expect(service.create(mockUserId, mockActivityId, mockManagerId)).rejects.toThrow(NotFoundException);
+    });
+
+    it('returns existing assignment if already created', async () => {
+      mockAssignmentModel.findOne.mockReturnValue(chainable(mockAssignment));
+      const res = await service.create(mockUserId, mockActivityId, mockManagerId);
+      expect(res).toEqual(mockAssignment);
     });
   });
 });

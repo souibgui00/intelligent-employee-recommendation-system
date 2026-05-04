@@ -98,7 +98,7 @@ describe('UsersController', () => {
       
       const result = await controller.getMe(mockReq);
       expect(usersService.findOne).toHaveBeenCalledWith('1');
-      expect(result.name).toBe('Test');
+      expect(result!.name).toBe('Test');
     });
   });
 
@@ -149,7 +149,7 @@ describe('UsersController', () => {
     });
 
     it('should calculate global activity score', async () => {
-      usersService.calculateGlobalActivityScore.mockResolvedValue(0.5);
+      usersService.calculateGlobalActivityScore.mockResolvedValue({ userId: '1', globalActivityScore: 0.5 } as any);
       const res = await controller.getGlobalActivityScore('1');
       expect(res).toBe(0.5);
     });

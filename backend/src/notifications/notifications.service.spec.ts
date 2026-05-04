@@ -8,7 +8,7 @@ describe('NotificationsService', () => {
   let service: NotificationsService;
 
   const mockSave = jest.fn();
-  function MockNotificationModel(data: any) {
+  function MockNotificationModel(this: any, data: any) {
     this.save = mockSave;
   }
   
