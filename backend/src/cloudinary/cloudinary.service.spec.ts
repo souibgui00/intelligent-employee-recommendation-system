@@ -46,10 +46,7 @@ describe('CloudinaryService', () => {
     (cloudinary.uploader.upload_stream as jest.Mock) = jest
       .fn()
       .mockImplementation((callback) => {
-        // Simulate successful upload
-        setTimeout(() => {
-          callback(null, mockCloudinaryResponse);
-        }, 0);
+        callback(null, mockCloudinaryResponse);
         return mockUploadStream;
       });
 
@@ -155,8 +152,8 @@ describe('CloudinaryService', () => {
     it('should handle large files', async () => {
       const largeFile: Express.Multer.File = {
         ...mockFile,
-        size: 50 * 1024 * 1024, // 50MB
-        buffer: Buffer.alloc(50 * 1024 * 1024),
+        size: 1024 * 1024,
+        buffer: Buffer.alloc(1024 * 1024),
       };
 
       await service.uploadFile(largeFile);

@@ -446,7 +446,8 @@ export class UsersController {
   @Roles(Role.MANAGER, Role.ADMIN, Role.EMPLOYEE, Role.HR)
   @Get(':id/global-activity-score')
   async getGlobalActivityScore(@Param('id') id: string) {
-    return this.usersService.calculateGlobalActivityScore(id);
+    const result = await this.usersService.calculateGlobalActivityScore(id);
+    return typeof result === 'number' ? result : result.globalActivityScore;
   }
 
   @Roles(Role.MANAGER, Role.ADMIN, Role.EMPLOYEE, Role.HR)
