@@ -20,7 +20,9 @@ RUN npm install --production
 
 COPY --from=builder /app/dist ./dist
 
+RUN ls -la /app/dist; ls -la /app/dist/src
+
 EXPOSE 3001
 
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]
 
