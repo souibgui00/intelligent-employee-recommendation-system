@@ -48,7 +48,7 @@ pipeline {
         stage('🔍 SonarQube Analysis') {
   steps {
     dir('backend') {
-      sh '/opt/sonar-scanner/bin/sonar-scanner -Dsonar.token=squ_3638fe03cb73ea0e15f747beb004d1493dafa066'
+      sh '/opt/sonar-scanner/bin/sonar-scanner -Dsonar.token=squ_a3f385cf7b3b88b7b2caa1701f06913ffe4ec46a'
     }
   }
 }
