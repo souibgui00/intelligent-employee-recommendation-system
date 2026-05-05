@@ -8,6 +8,7 @@ import { imageOptimizationMiddleware } from './image-optimization.middleware';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const defaultAllowedOrigins = [
+    'https://skillhr.netlify.app',
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:3000',
