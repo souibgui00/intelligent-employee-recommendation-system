@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
         if (parsed) setUser(parsed);
       }
     } catch (e) {
-      // ignore - exception handled
+      console.error('Failed to initialize auth context:', e);
     }
   }, []);
 

@@ -22,7 +22,7 @@ import { User } from '../users/schema/user.schema';
 export class SkillDecayService {
   private readonly logger = new Logger(SkillDecayService.name);
 
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(@InjectModel(User.name) private readonly userModel: Model<User>) {}
 
   /**
    * Weekly cron job — runs every Sunday at 00:00

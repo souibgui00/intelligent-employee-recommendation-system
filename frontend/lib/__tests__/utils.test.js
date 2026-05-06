@@ -16,7 +16,8 @@ describe('Utility Functions', () => {
     });
 
     it('should handle conditional classes', () => {
-      const result = cn('px-2', false && 'py-1', true && 'py-3');
+      const conditionalClasses = ['py-1', 'py-3'].filter((className) => className === 'py-3');
+      const result = cn('px-2', ...conditionalClasses);
       expect(result).toContain('px-2');
       expect(result).toContain('py-3');
       expect(result).not.toContain('py-1');

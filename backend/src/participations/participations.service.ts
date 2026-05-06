@@ -16,7 +16,7 @@ import { EvaluationsService } from '../evaluations/evaluations.service';
 export class ParticipationsService {
   constructor(
     @InjectModel(Participation.name)
-    private participationModel: Model<Participation>,
+    private readonly participationModel: Model<Participation>,
     private activitiesService: ActivitiesService,
     private usersService: UsersService,
     private scoringService: ScoringService,
@@ -93,12 +93,10 @@ export class ParticipationsService {
       ? this.normalizeManagerRating(incomingFeedback)
       : oldFeedback;
 
-    const status =
-      safeProgress === 100
-        ? 'completed'
-        : safeProgress === 0
-          ? 'started'
-          : 'in_progress';
+    let status: 'completed' | 'started' | 'in_progress';
+    if (safeProgress === 100) status = 'completed';
+    else if (safeProgress === 0) status = 'started';
+    else status = 'in_progress';
     const participation = await this.participationModel.findOneAndUpdate(
       {
         userId: new Types.ObjectId(userId),

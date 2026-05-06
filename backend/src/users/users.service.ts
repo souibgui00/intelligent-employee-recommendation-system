@@ -34,7 +34,8 @@ export class UsersService {
   private normalizeSkillCategory(rawType: string | undefined): string {
     const normalized = (rawType || 'knowledge')
       .toLowerCase()
-      .replace(/[-_\s]/g, '');
+      .split(/[-_\s]/)
+      .join('');
     if (normalized === 'knowhow') return 'knowhow';
     if (normalized === 'softskill' || normalized === 'softskills')
       return 'softskill';
@@ -296,9 +297,11 @@ export class UsersService {
         .lean()
         .exec();
       const managedDeptIds = managedDepts.map((d: any) => d._id.toString());
-      const managedDeptNames = managedDepts
+      const managedDeptNames = new Set(
+        managedDepts
         .map((d: any) => d.name?.toLowerCase().trim())
-        .filter(Boolean);
+        .filter(Boolean),
+      );
 
       const managerObj = allUsers.find(
         (u: any) => u._id.toString() === managerId,
@@ -324,7 +327,7 @@ export class UsersService {
           const rawDept = u.department?.toLowerCase().trim();
           const isDeptNameReport =
             rawDept &&
-            (managedDeptNames.includes(rawDept) || rawDept === managerRawDept);
+            (managedDeptNames.has(rawDept) || rawDept === managerRawDept);
 
           return isDirectReport || isDeptIdReport || isDeptNameReport;
         })

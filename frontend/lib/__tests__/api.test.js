@@ -101,19 +101,16 @@ describe('ApiService', () => {
         new Response(JSON.stringify({}), { status: 401 })
       );
 
-      const location = globalThis.window.location;
+      const originalLocation = globalThis.window.location;
       delete globalThis.window.location;
       globalThis.window.location = { href: '', pathname: '/dashboard' };
 
-      try {
-        await apiService.request('/test', { method: 'GET' });
-      } catch (error) {
-        // Expected to clear storage
-      }
+      await expect(apiService.request('/test', { method: 'GET' })).rejects.toThrow();
 
       expect(globalThis.sessionStorage.getItem('skillmatch_token')).toBeNull();
       expect(globalThis.sessionStorage.getItem('skillmatch_refresh_token')).toBeNull();
       expect(globalThis.window.location.href).toBe('/login');
+      globalThis.window.location = originalLocation;
     });
 
     it('should throw error on failed request', async () => {
@@ -191,11 +188,7 @@ describe('ApiService', () => {
         new Response(JSON.stringify({ message: errorMessage }), { status: 500 })
       );
 
-      try {
-        await apiService.request('/test', { method: 'GET' });
-      } catch (error) {
-        // Expected
-      }
+      await expect(apiService.request('/test', { method: 'GET' })).rejects.toThrow(errorMessage);
 
       expect(consoleErrorSpy).toHaveBeenCalled();
       consoleErrorSpy.mockRestore();

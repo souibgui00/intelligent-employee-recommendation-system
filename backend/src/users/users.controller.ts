@@ -69,7 +69,7 @@ export class UsersController {
       storage: diskStorage({
         destination: join(process.cwd(), 'uploads'),
         filename: (req: any, file: any, cb: any) => {
-          const randomName = Array(32)
+          const randomName = new Array(32)
             .fill(null)
             .map(() => Math.round(Math.random() * 16).toString(16))
             .join('');
@@ -91,7 +91,7 @@ export class UsersController {
       storage: diskStorage({
         destination: join(process.cwd(), 'uploads'),
         filename: (req: any, file: any, cb: any) => {
-          const randomName = Array(32)
+          const randomName = new Array(32)
             .fill(null)
             .map(() => Math.round(Math.random() * 16).toString(16))
             .join('');
@@ -163,7 +163,7 @@ export class UsersController {
       storage: diskStorage({
         destination: join(process.cwd(), 'uploads'),
         filename: (req: any, file: any, cb: any) => {
-          const randomName = Array(32)
+          const randomName = new Array(32)
             .fill(null)
             .map(() => Math.round(Math.random() * 16).toString(16))
             .join('');

@@ -62,7 +62,16 @@ export function AccessibilityWidget() {
       if (!settings.screenReader) return;
       let text = e.target.innerText || e.target.ariaLabel || e.target.alt;
       if (text && text.length < 300) {
-        text = text.replaceAll(/[\[\]{}()_]/g, ' ').replaceAll(/\s+/g, ' ').trim();
+        text = text
+          .replaceAll('[', ' ')
+          .replaceAll(']', ' ')
+          .replaceAll('{', ' ')
+          .replaceAll('}', ' ')
+          .replaceAll('(', ' ')
+          .replaceAll(')', ' ')
+          .replaceAll('_', ' ')
+          .replaceAll(/\s+/g, ' ')
+          .trim();
         globalThis.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'en-US';

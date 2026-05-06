@@ -24,6 +24,16 @@ export class ScoringService {
     private participationModel: Model<any>,
   ) {}
 
+  private normalizeObjectIdString(value: unknown): string {
+    const raw = value?.toString?.() ?? '';
+    if (!raw.startsWith('ObjectId(') || !raw.endsWith(')')) return raw;
+
+    return raw
+      .slice('ObjectId('.length, -1)
+      .replaceAll('"', '')
+      .replaceAll("'", '');
+  }
+
   /**
    * Calculate individual skill score for an employee
    * Score range: 0-120 (exceeds 100 to allow for bonus growth)
@@ -127,13 +137,9 @@ export class ScoringService {
     const requiredSkills = activity.requiredSkills || [];
 
     for (const req of requiredSkills) {
-      const reqSkillId = req.skillId
-        ?.toString()
-        .replace(/^ObjectId\(['"]?|['"]?\)$/g, '');
+      const reqSkillId = this.normalizeObjectIdString(req.skillId);
       const userSkill = user.skills?.find((s) => {
-        const sId = s.skillId
-          ?.toString()
-          .replace(/^ObjectId\(['"]?|['"]?\)$/g, '');
+        const sId = this.normalizeObjectIdString(s.skillId);
         return sId === reqSkillId;
       });
       const skillScore = userSkill
@@ -181,13 +187,9 @@ export class ScoringService {
     let matchedCount = 0;
 
     for (const req of requiredSkills) {
-      const reqSkillId = req.skillId
-        ?.toString()
-        .replace(/^ObjectId\(['"]?|['"]?\)$/g, '');
+      const reqSkillId = this.normalizeObjectIdString(req.skillId);
       const userSkill = user.skills?.find((s) => {
-        const sId = s.skillId
-          ?.toString()
-          .replace(/^ObjectId\(['"]?|['"]?\)$/g, '');
+        const sId = this.normalizeObjectIdString(s.skillId);
         return sId === reqSkillId;
       });
       if (!userSkill) continue;
@@ -231,13 +233,9 @@ export class ScoringService {
     // Update each required skill based on feedback and weight
     for (const req of requiredSkills) {
       const weight = req.weight || 0.5;
-      const reqSkillId = req.skillId
-        ?.toString()
-        .replace(/^ObjectId\(['"]?|['"]?\)$/g, '');
+      const reqSkillId = this.normalizeObjectIdString(req.skillId);
       const skillIndex = user.skills?.findIndex((s) => {
-        const sId = s.skillId
-          ?.toString()
-          .replace(/^ObjectId\(['"]?|['"]?\)$/g, '');
+        const sId = this.normalizeObjectIdString(s.skillId);
         return sId === reqSkillId;
       });
 

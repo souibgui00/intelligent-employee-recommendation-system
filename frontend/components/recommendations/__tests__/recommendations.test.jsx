@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 // Mock the recommendation components
@@ -25,7 +25,7 @@ const mockRecommendations = [
 describe('Recommendation Components', () => {
   describe('RecommendationResults', () => {
     it('should render recommendations list', () => {
-      const { container } = render(
+      render(
         <div>
           {mockRecommendations.map((rec) => (
             <div key={rec.id} data-testid={`recommendation-${rec.id}`}>
@@ -86,7 +86,7 @@ describe('Recommendation Components', () => {
     });
 
     it('should handle empty recommendations', () => {
-      const { container } = render(
+      render(
         <div>
           {[].length === 0 ? (
             <p>No recommendations available</p>
@@ -98,7 +98,7 @@ describe('Recommendation Components', () => {
     });
 
     it('should sort recommendations by score', () => {
-      const sorted = mockRecommendations.sort((a, b) => b.overallScore - a.overallScore);
+      const sorted = [...mockRecommendations].sort((a, b) => b.overallScore - a.overallScore);
 
       render(
         <div>
@@ -109,8 +109,6 @@ describe('Recommendation Components', () => {
           ))}
         </div>
       );
-
-      const scores = screen.getAllByTestId(/item-/);
       expect(scores[0]).toHaveTextContent('92');
       expect(scores[1]).toHaveTextContent('78');
     });

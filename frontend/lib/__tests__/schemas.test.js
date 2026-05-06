@@ -5,12 +5,23 @@ import {
   skillSchema,
   enhancedSkillSchema,
   managerActivityEnrollmentSchema,
-  managerAssignmentConfirmationSchema,
   managerSkillAssessmentSchema,
   managerPerformanceReviewSchema,
 } from '../schemas';
 
 describe('Zod Validation Schemas', () => {
+  const expectValid = (schema, data) => {
+    const result = schema.safeParse(data);
+    expect(result.success).toBe(true);
+    return result;
+  };
+
+  const expectInvalid = (schema, data) => {
+    const result = schema.safeParse(data);
+    expect(result.success).toBe(false);
+    return result;
+  };
+
   describe('employeeSchema', () => {
     it('should validate a valid employee object', () => {
       const validEmployee = {
@@ -23,55 +34,16 @@ describe('Zod Validation Schemas', () => {
         yearsOfExperience: 5,
       };
 
-      const result = employeeSchema.safeParse(validEmployee);
-      expect(result.success).toBe(true);
+      expectValid(employeeSchema, validEmployee);
     });
 
-    it('should reject employee with invalid name (too short)', () => {
-      const invalidEmployee = {
-        name: 'J',
-        email: 'john@example.com',
-        department_id: '123',
-        role: 'employee',
-      };
-
-      const result = employeeSchema.safeParse(invalidEmployee);
-      expect(result.success).toBe(false);
-    });
-
-    it('should reject employee with invalid email', () => {
-      const invalidEmployee = {
-        name: 'John Doe',
-        email: 'invalid-email',
-        department_id: '123',
-        role: 'employee',
-      };
-
-      const result = employeeSchema.safeParse(invalidEmployee);
-      expect(result.success).toBe(false);
-    });
-
-    it('should reject employee without department_id', () => {
-      const invalidEmployee = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        role: 'employee',
-      };
-
-      const result = employeeSchema.safeParse(invalidEmployee);
-      expect(result.success).toBe(false);
-    });
-
-    it('should reject invalid role', () => {
-      const invalidEmployee = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        department_id: '123',
-        role: 'invalid_role',
-      };
-
-      const result = employeeSchema.safeParse(invalidEmployee);
-      expect(result.success).toBe(false);
+    it.each([
+      ['invalid name (too short)', { name: 'J', email: 'john@example.com', department_id: '123', role: 'employee' }],
+      ['invalid email', { name: 'John Doe', email: 'invalid-email', department_id: '123', role: 'employee' }],
+      ['missing department_id', { name: 'John Doe', email: 'john@example.com', role: 'employee' }],
+      ['invalid role', { name: 'John Doe', email: 'john@example.com', department_id: '123', role: 'invalid_role' }],
+    ])('should reject employee with %s', (_, invalidEmployee) => {
+      expectInvalid(employeeSchema, invalidEmployee);
     });
 
     it('should set default status to "active"', () => {
@@ -82,7 +54,7 @@ describe('Zod Validation Schemas', () => {
         role: 'employee',
       };
 
-      const result = employeeSchema.safeParse(employee);
+      const result = expectValid(employeeSchema, employee);
       expect(result.data.status).toBe('active');
     });
   });
@@ -101,61 +73,16 @@ describe('Zod Validation Schemas', () => {
         level: 'beginner',
       };
 
-      const result = activitySchema.safeParse(validActivity);
-      expect(result.success).toBe(true);
+      expectValid(activitySchema, validActivity);
     });
 
-    it('should reject activity with title too short', () => {
-      const invalidActivity = {
-        title: 'A',
-        description: 'Learn React fundamentals and best practices',
-        type: 'training',
-        date: '2026-05-15',
-        duration: '4 hours',
-      };
-
-      const result = activitySchema.safeParse(invalidActivity);
-      expect(result.success).toBe(false);
-    });
-
-    it('should reject activity with description too short', () => {
-      const invalidActivity = {
-        title: 'React Training',
-        description: 'Short',
-        type: 'training',
-        date: '2026-05-15',
-        duration: '4 hours',
-      };
-
-      const result = activitySchema.safeParse(invalidActivity);
-      expect(result.success).toBe(false);
-    });
-
-    it('should reject invalid activity type', () => {
-      const invalidActivity = {
-        title: 'React Training',
-        description: 'Learn React fundamentals and best practices',
-        type: 'invalid_type',
-        date: '2026-05-15',
-        duration: '4 hours',
-      };
-
-      const result = activitySchema.safeParse(invalidActivity);
-      expect(result.success).toBe(false);
-    });
-
-    it('should reject capacity less than 1', () => {
-      const invalidActivity = {
-        title: 'React Training',
-        description: 'Learn React fundamentals and best practices',
-        type: 'training',
-        date: '2026-05-15',
-        duration: '4 hours',
-        capacity: 0,
-      };
-
-      const result = activitySchema.safeParse(invalidActivity);
-      expect(result.success).toBe(false);
+    it.each([
+      ['title too short', { title: 'A', description: 'Learn React fundamentals and best practices', type: 'training', date: '2026-05-15', duration: '4 hours' }],
+      ['description too short', { title: 'React Training', description: 'Short', type: 'training', date: '2026-05-15', duration: '4 hours' }],
+      ['invalid activity type', { title: 'React Training', description: 'Learn React fundamentals and best practices', type: 'invalid_type', date: '2026-05-15', duration: '4 hours' }],
+      ['capacity less than 1', { title: 'React Training', description: 'Learn React fundamentals and best practices', type: 'training', date: '2026-05-15', duration: '4 hours', capacity: 0 }],
+    ])('should reject activity with %s', (_, invalidActivity) => {
+      expectInvalid(activitySchema, invalidActivity);
     });
 
     it('should set default intent to "development"', () => {
@@ -167,7 +94,7 @@ describe('Zod Validation Schemas', () => {
         duration: '4 hours',
       };
 
-      const result = activitySchema.safeParse(activity);
+      const result = expectValid(activitySchema, activity);
       expect(result.data.intent).toBe('development');
     });
   });
@@ -181,28 +108,14 @@ describe('Zod Validation Schemas', () => {
         description: 'JavaScript library for building UIs',
       };
 
-      const result = skillSchema.safeParse(validSkill);
-      expect(result.success).toBe(true);
+      expectValid(skillSchema, validSkill);
     });
 
-    it('should reject skill with name too short', () => {
-      const invalidSkill = {
-        name: 'J',
-        type: 'technique',
-      };
-
-      const result = skillSchema.safeParse(invalidSkill);
-      expect(result.success).toBe(false);
-    });
-
-    it('should reject invalid skill type', () => {
-      const invalidSkill = {
-        name: 'React',
-        type: 'invalid_type',
-      };
-
-      const result = skillSchema.safeParse(invalidSkill);
-      expect(result.success).toBe(false);
+    it.each([
+      ['name too short', { name: 'J', type: 'technique' }],
+      ['invalid skill type', { name: 'React', type: 'invalid_type' }],
+    ])('should reject skill with %s', (_, invalidSkill) => {
+      expectInvalid(skillSchema, invalidSkill);
     });
 
     it('should validate auto_eval range (0-5)', () => {
@@ -212,8 +125,7 @@ describe('Zod Validation Schemas', () => {
         auto_eval: 4,
       };
 
-      const result = skillSchema.safeParse(skill);
-      expect(result.success).toBe(true);
+      expectValid(skillSchema, skill);
     });
 
     it('should reject auto_eval outside range', () => {
@@ -233,7 +145,7 @@ describe('Zod Validation Schemas', () => {
         type: 'technique',
       };
 
-      const result = skillSchema.safeParse(skill);
+      const result = expectValid(skillSchema, skill);
       expect(result.data.etat).toBe('draft');
     });
   });
@@ -247,31 +159,14 @@ describe('Zod Validation Schemas', () => {
         maxParticipants: 20,
       };
 
-      const result = sessionSchema.safeParse(validSession);
-      expect(result.success).toBe(true);
+      expectValid(sessionSchema, validSession);
     });
 
-    it('should reject session without activityId', () => {
-      const invalidSession = {
-        date: '2026-05-15',
-        location: 'Room 101',
-        maxParticipants: 20,
-      };
-
-      const result = sessionSchema.safeParse(invalidSession);
-      expect(result.success).toBe(false);
-    });
-
-    it('should reject session with maxParticipants < 1', () => {
-      const invalidSession = {
-        activityId: 'activity-123',
-        date: '2026-05-15',
-        location: 'Room 101',
-        maxParticipants: 0,
-      };
-
-      const result = sessionSchema.safeParse(invalidSession);
-      expect(result.success).toBe(false);
+    it.each([
+      ['missing activityId', { date: '2026-05-15', location: 'Room 101', maxParticipants: 20 }],
+      ['maxParticipants < 1', { activityId: 'activity-123', date: '2026-05-15', location: 'Room 101', maxParticipants: 0 }],
+    ])('should reject session with %s', (_, invalidSession) => {
+      expectInvalid(sessionSchema, invalidSession);
     });
   });
 
@@ -284,8 +179,7 @@ describe('Zod Validation Schemas', () => {
         priorityLevel: 'high',
       };
 
-      const result = managerActivityEnrollmentSchema.safeParse(validEnrollment);
-      expect(result.success).toBe(true);
+      expectValid(managerActivityEnrollmentSchema, validEnrollment);
     });
 
     it('should reject enrollment without selectedEmployees', () => {
@@ -294,8 +188,7 @@ describe('Zod Validation Schemas', () => {
         selectedEmployees: [],
       };
 
-      const result = managerActivityEnrollmentSchema.safeParse(invalidEnrollment);
-      expect(result.success).toBe(false);
+      expectInvalid(managerActivityEnrollmentSchema, invalidEnrollment);
     });
   });
 
@@ -309,34 +202,14 @@ describe('Zod Validation Schemas', () => {
         evaluationCriteria: ['Problem solving', 'Code quality', 'Documentation'],
       };
 
-      const result = managerSkillAssessmentSchema.safeParse(validAssessment);
-      expect(result.success).toBe(true);
+      expectValid(managerSkillAssessmentSchema, validAssessment);
     });
 
-    it('should reject assessment with short scope', () => {
-      const invalidAssessment = {
-        skillCategory: 'Technical Skills',
-        assessmentType: 'team',
-        targetProficiency: 'intermediate',
-        assessmentScope: 'short',
-        evaluationCriteria: ['Problem solving'],
-      };
-
-      const result = managerSkillAssessmentSchema.safeParse(invalidAssessment);
-      expect(result.success).toBe(false);
-    });
-
-    it('should reject assessment without criteria', () => {
-      const invalidAssessment = {
-        skillCategory: 'Technical Skills',
-        assessmentType: 'team',
-        targetProficiency: 'intermediate',
-        assessmentScope: 'Evaluate current technical capabilities and identify gaps',
-        evaluationCriteria: [],
-      };
-
-      const result = managerSkillAssessmentSchema.safeParse(invalidAssessment);
-      expect(result.success).toBe(false);
+    it.each([
+      ['short scope', { skillCategory: 'Technical Skills', assessmentType: 'team', targetProficiency: 'intermediate', assessmentScope: 'short', evaluationCriteria: ['Problem solving'] }],
+      ['missing criteria', { skillCategory: 'Technical Skills', assessmentType: 'team', targetProficiency: 'intermediate', assessmentScope: 'Evaluate current technical capabilities and identify gaps', evaluationCriteria: [] }],
+    ])('should reject assessment with %s', (_, invalidAssessment) => {
+      expectInvalid(managerSkillAssessmentSchema, invalidAssessment);
     });
   });
 
@@ -353,40 +226,14 @@ describe('Zod Validation Schemas', () => {
         },
       };
 
-      const result = managerPerformanceReviewSchema.safeParse(validReview);
-      expect(result.success).toBe(true);
+      expectValid(managerPerformanceReviewSchema, validReview);
     });
 
-    it('should reject with invalid exceptional threshold', () => {
-      const invalidReview = {
-        reviewPeriod: 'Q2 2026',
-        reviewType: 'quarterly',
-        evaluationMetrics: ['Productivity'],
-        performanceThresholds: {
-          exceptional: 75, // Too low
-          satisfactory: 70,
-          improvement: 50,
-        },
-      };
-
-      const result = managerPerformanceReviewSchema.safeParse(invalidReview);
-      expect(result.success).toBe(false);
-    });
-
-    it('should reject with invalid satisfactory threshold', () => {
-      const invalidReview = {
-        reviewPeriod: 'Q2 2026',
-        reviewType: 'quarterly',
-        evaluationMetrics: ['Productivity'],
-        performanceThresholds: {
-          exceptional: 85,
-          satisfactory: 55, // Too low
-          improvement: 50,
-        },
-      };
-
-      const result = managerPerformanceReviewSchema.safeParse(invalidReview);
-      expect(result.success).toBe(false);
+    it.each([
+      ['invalid exceptional threshold', { reviewPeriod: 'Q2 2026', reviewType: 'quarterly', evaluationMetrics: ['Productivity'], performanceThresholds: { exceptional: 75, satisfactory: 70, improvement: 50 } }],
+      ['invalid satisfactory threshold', { reviewPeriod: 'Q2 2026', reviewType: 'quarterly', evaluationMetrics: ['Productivity'], performanceThresholds: { exceptional: 85, satisfactory: 55, improvement: 50 } }],
+    ])('should reject review with %s', (_, invalidReview) => {
+      expectInvalid(managerPerformanceReviewSchema, invalidReview);
     });
   });
 

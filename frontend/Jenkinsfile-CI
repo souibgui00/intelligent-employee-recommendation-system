@@ -47,17 +47,17 @@ pipeline {
 
         stage('🔍 SonarQube Analysis') {
             steps {
-                dir('frontend') {
-                    sh '''/opt/sonar-scanner/bin/sonar-scanner \
-                        -Dsonar.projectKey=frontend \
-                        -Dsonar.sources=app,components,lib,src \
-                        -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.vite/**,**/coverage/**,**/.scannerwork/**,**/public/**,**/*.json,**/*.md,**/*.yml,**/*.yaml,**/*.lock,**/components/ui/** \
-                        -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-                        -Dsonar.coverage.exclusions=**/node_modules/**,**/dist/**,**/*.test.*,**/*.spec.*,**/components/ui/** \
-                        -Dsonar.host.url=http://localhost:9000 \
-                        -Dsonar.token=squ_df2da35f30d9d1bb68bcb12bf28b1f3ee12ba61a
-
-'''
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                    dir('frontend') {
+                        sh """/opt/sonar-scanner/bin/sonar-scanner \
+                            -Dsonar.projectKey=frontend \
+                            -Dsonar.sources=app,components,lib,src \
+                            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/.vite/**,**/coverage/**,**/.scannerwork/**,**/public/**,**/*.json,**/*.md,**/*.yml,**/*.yaml,**/*.lock,**/components/ui/** \
+                            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+                            -Dsonar.coverage.exclusions=**/node_modules/**,**/dist/**,**/*.test.*,**/*.spec.*,**/components/ui/** \
+                            -Dsonar.host.url=http://localhost:9000 \
+                            -Dsonar.token=${env.SONAR_TOKEN}"""
+                    }
                 }
             }
         }
