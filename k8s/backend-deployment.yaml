@@ -14,6 +14,7 @@ spec:
       labels:
         app: backend
     spec:
+      nodeName: monta-virtual-machine    # ← pin to master where image is built
       containers:
       - name: backend
         image: mon-backend:latest
@@ -52,4 +53,5 @@ spec:
   ports:
   - port: 3001
     targetPort: 3001
+    nodePort: 30001
   type: NodePort
