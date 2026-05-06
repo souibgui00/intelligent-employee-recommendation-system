@@ -182,8 +182,6 @@ describe('Recommendation Components', () => {
 
   describe('Recommendation Display Logic', () => {
     it('should highlight high-score recommendations', () => {
-      const highScorers = mockRecommendations.filter((rec) => rec.overallScore >= 85);
-
       render(
         <div>
           {mockRecommendations.map((rec) => (

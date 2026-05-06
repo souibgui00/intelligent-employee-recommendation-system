@@ -15,7 +15,7 @@ try {
         };
       },
       toBeDisabled(received) {
-        const isDisabled = received && (received.disabled === true || received.getAttribute && received.getAttribute('disabled') !== null);
+        const isDisabled = received?.disabled === true || received?.getAttribute?.('disabled') !== null;
         const pass = !!isDisabled;
         return {
           pass,

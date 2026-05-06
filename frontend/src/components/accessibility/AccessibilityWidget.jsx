@@ -162,10 +162,9 @@ export function AccessibilityWidget() {
               { key: 'spotlight', icon: <Lucide.Search />, label: 'Spotlight', desc: 'Focus on small area' },
               { key: 'reduceMotion', icon: <Lucide.Wind />, label: 'Reduce Motion', desc: 'Minimize animations' },
             ].map(tool => (
-              <div 
+              <button 
                 key={tool.key}
-                role="button"
-                tabIndex={0}
+                type="button"
                 className={cn(
                   "flex items-center justify-between p-4 rounded-[1.5rem] transition-all duration-300 cursor-pointer group/item",
                   settings[tool.key] 
@@ -173,12 +172,6 @@ export function AccessibilityWidget() {
                     : "bg-slate-50 hover:bg-slate-100 text-slate-600 border border-transparent hover:border-orange-200"
                 )}
                 onClick={() => toggle(tool.key)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    toggle(tool.key);
-                  }
-                }}
               >
                 <div className="flex items-center gap-4">
                   <div className={cn(
@@ -244,3 +237,6 @@ export function AccessibilityWidget() {
     </>
   );
 }
+
+              </button>
+        </div>
