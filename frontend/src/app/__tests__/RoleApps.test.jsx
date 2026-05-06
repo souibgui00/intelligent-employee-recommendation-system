@@ -9,15 +9,47 @@ import ManagerApp from '../../ManagerApp';
 const routeCalls = [];
 const mockUseLocation = jest.fn();
 
-// PortalLayout mock with PropTypes
+// Component definitions before mocks to avoid hoisting issues with PropTypes
 const PortalLayoutComponent = ({ role, children }) => (
   <div data-testid="portal-layout" data-role={role}>
     {children}
   </div>
 );
+
+const BadgeComponent = ({ children }) => <span>{children}</span>;
+
+const RoutesComponent = ({ children }) => <div data-testid="routes">{children}</div>;
+
+const RouteComponent = (props) => {
+  routeCalls.push(props);
+  return <div data-testid={`route-${props.path || 'index'}`} />;
+};
+
+const NavigateComponent = ({ to, replace }) => (
+  <div data-testid="navigate" data-to={to} data-replace={String(replace)} />
+);
+
+// Add PropTypes after component definitions (optional - won't affect mocks)
 PortalLayoutComponent.propTypes = {
   role: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
+};
+
+BadgeComponent.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+RoutesComponent.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+RouteComponent.propTypes = {
+  path: PropTypes.string,
+};
+
+NavigateComponent.propTypes = {
+  to: PropTypes.string.isRequired,
+  replace: PropTypes.bool,
 };
 
 jest.mock('@/components/PortalLayout', () => ({
@@ -40,45 +72,16 @@ jest.mock('@/lib/auth-context', () => ({
   useAuth: () => ({ user: null }),
 }));
 
-jest.mock('@/components/ui/badge', () => {
-  const BadgeComponent = ({ children }) => <span>{children}</span>;
-  BadgeComponent.propTypes = {
-    children: PropTypes.node.isRequired,
-  };
-  return {
-    Badge: BadgeComponent,
-  };
-});
+jest.mock('@/components/ui/badge', () => ({
+  Badge: BadgeComponent,
+}));
 
-jest.mock('react-router-dom', () => {
-  const RoutesComponent = ({ children }) => <div data-testid="routes">{children}</div>;
-  RoutesComponent.propTypes = {
-    children: PropTypes.node.isRequired,
-  };
-
-  const RouteComponent = (props) => {
-    routeCalls.push(props);
-    return <div data-testid={`route-${props.path || 'index'}`} />;
-  };
-  RouteComponent.propTypes = {
-    path: PropTypes.string,
-  };
-
-  const NavigateComponent = ({ to, replace }) => (
-    <div data-testid="navigate" data-to={to} data-replace={String(replace)} />
-  );
-  NavigateComponent.propTypes = {
-    to: PropTypes.string.isRequired,
-    replace: PropTypes.bool,
-  };
-
-  return {
-    Routes: RoutesComponent,
-    Route: RouteComponent,
-    Navigate: NavigateComponent,
-    useLocation: () => mockUseLocation(),
-  };
-});
+jest.mock('react-router-dom', () => ({
+  Routes: RoutesComponent,
+  Route: RouteComponent,
+  Navigate: NavigateComponent,
+  useLocation: () => mockUseLocation(),
+}));
 
 describe('Role apps routing', () => {
   beforeEach(() => {
