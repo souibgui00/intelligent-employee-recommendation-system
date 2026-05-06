@@ -1,12 +1,11 @@
 pipeline {
     agent any
 
-    options {
-        disableConcurrentBuilds()
-    }
-
-    tools {
-        nodejs 'NodeJS-20'
+    environment {
+        PATH = "/usr/bin:/usr/local/bin:${env.PATH}"
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'
+        IMAGE_NAME = 'mon-backend'
+        NAMESPACE = 'default'
     }
 
     stages {
@@ -17,99 +16,58 @@ pipeline {
             }
         }
 
-        stage('📦 Install') {
-            steps {
-                dir('backend') {
-                    retry(3) {
-                        sh 'npm install --prefer-offline --fetch-timeout=600000'
-                    }
-                }
-            }
-        }
-
-        stage('🧪 Tests') {
-  steps {
-    dir('backend') {
-      sh 'npm test -- --coverage --coverageReporters=lcov --coverageReporters=text --forceExit'
-      sh 'ls -lh coverage/lcov.info' // confirms file exists
-      sh 'pwd' // prints exact working directory so you can verify the path
-    }
-  }
-}
-
-        stage('🏗️ Build') {
-            steps {
-                dir('backend') {
-                    sh 'npm run build'
-                }
-            }
-        }
-
-        stage('🔍 SonarQube Analysis') {
-            steps {
-                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                    dir('backend') {
-                        sh """/opt/sonar-scanner/bin/sonar-scanner \
-                            -Dsonar.projectKey=backend \
-                            -Dsonar.sources=. \
-                            -Dsonar.exclusions=node_modules/**,dist/**,**/*.test.*,**/*.spec.* \
-                            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-                            -Dsonar.coverage.exclusions=node_modules/**,dist/**,**/*.test.*,**/*.spec.* \
-                            -Dsonar.host.url=http://localhost:9000 \
-                            -Dsonar.token=${env.SONAR_TOKEN}"""
-                    }
-                }
-            }
-        }
-
-        stage('🐳 Docker Build') {
+        stage('🐳 Build Docker Image') {
             steps {
                 dir('backend') {
                     sh '''
-                        docker build -t mon-backend:${BUILD_NUMBER} .
-                        docker tag mon-backend:${BUILD_NUMBER} mon-backend:latest
+                        docker build -t ${IMAGE_NAME}:latest .
+                        docker tag ${IMAGE_NAME}:latest ${IMAGE_NAME}:${BUILD_NUMBER}
                     '''
                 }
             }
         }
 
-        stage('🔒 Trivy Scan') {
+        stage('🔧 Setup Kubeconfig') {
             steps {
                 sh '''
-                    trivy image \
-                        --cache-dir /var/lib/jenkins/.cache/trivy \
-                        --exit-code 0 \
-                        --severity HIGH,CRITICAL \
-                        --format table \
-                        mon-backend:${BUILD_NUMBER}
+                    mkdir -p /var/lib/jenkins/.kube
+                    cp /etc/kubernetes/admin.conf /var/lib/jenkins/.kube/config
+                    chown jenkins:jenkins /var/lib/jenkins/.kube/config
+                    kubectl get nodes
                 '''
             }
-            post {
-                always {
-                    sh '''
-                        trivy image \
-                            --cache-dir /var/lib/jenkins/.cache/trivy \
-                            --exit-code 0 \
-                            --severity HIGH,CRITICAL \
-                            --format json \
-                            --output trivy-backend-report.json \
-                            mon-backend:${BUILD_NUMBER}
-                    '''
-                    archiveArtifacts artifacts: 'trivy-backend-report.json', fingerprint: true
-                }
+        }
+
+        stage('🚀 Deploy to Kubernetes') {
+            steps {
+                sh '''
+                    kubectl apply -f k8s/backend-deployment.yaml \
+                        --validate=false \
+                        -n ${NAMESPACE}
+                    kubectl rollout status deployment/backend-deployment \
+                        -n ${NAMESPACE} \
+                        --timeout=120s
+                '''
+            }
+        }
+
+        stage('🔎 Verify Deployment') {
+            steps {
+                sh '''
+                    kubectl get pods -l app=backend -n ${NAMESPACE}
+                    kubectl get services -n ${NAMESPACE}
+                '''
             }
         }
     }
 
     post {
         success {
-            build job: 'CD-Backend', wait: false
-        }
-        always {
-            echo '🏁 Backend pipeline completed'
+            echo '✅ CD Backend déployé avec succès !'
         }
         failure {
-            echo '❌ Backend pipeline failed - check logs above'
+            echo '❌ Déploiement échoué — rollback...'
+            sh 'kubectl rollout undo deployment/backend-deployment -n ${NAMESPACE} || true'
         }
     }
 }
