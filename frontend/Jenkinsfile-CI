@@ -55,7 +55,9 @@ pipeline {
                         -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
                         -Dsonar.coverage.exclusions=**/node_modules/**,**/dist/**,**/*.test.*,**/*.spec.*,**/components/ui/** \
                         -Dsonar.host.url=http://localhost:9000 \
-                        -Dsonar.token=squ_a3f385cf7b3b88b7b2caa1701f06913ffe4ec46a'''
+                        -Dsonar.token=squ_df2da35f30d9d1bb68bcb12bf28b1f3ee12ba61a
+
+'''
                 }
             }
         }
