@@ -10,6 +10,7 @@ import { Department } from './schema/department.schema';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 import { User } from '../users/schema/user.schema';
+import { randomInt } from 'crypto';
 
 @Injectable()
 export class DepartmentsService {
@@ -26,7 +27,7 @@ export class DepartmentsService {
         .join('')
         .toUpperCase() +
       '-' +
-      Math.floor(10 + Math.random() * 90)
+      randomInt(10, 100)
     );
   }
 

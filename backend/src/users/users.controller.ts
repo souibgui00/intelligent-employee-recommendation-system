@@ -17,6 +17,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
+import { randomBytes } from 'crypto';
 import { UsersService } from './users.service';
 import { CvExtractionService } from '../common/services/cv-extraction.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -69,11 +70,8 @@ export class UsersController {
       storage: diskStorage({
         destination: join(process.cwd(), 'uploads'),
         filename: (req: any, file: any, cb: any) => {
-          const randomName = new Array(32)
-            .fill(null)
-            .map(() => Math.round(Math.random() * 16).toString(16))
-            .join('');
-          return cb(null, `${randomName}${extname(file.originalname)}`);
+            const randomName = randomBytes(16).toString('hex');
+            return cb(null, `${randomName}${extname(file.originalname)}`);
         },
       }),
     }),
@@ -91,11 +89,8 @@ export class UsersController {
       storage: diskStorage({
         destination: join(process.cwd(), 'uploads'),
         filename: (req: any, file: any, cb: any) => {
-          const randomName = new Array(32)
-            .fill(null)
-            .map(() => Math.round(Math.random() * 16).toString(16))
-            .join('');
-          return cb(null, `${randomName}${extname(file.originalname)}`);
+            const randomName = randomBytes(16).toString('hex');
+            return cb(null, `${randomName}${extname(file.originalname)}`);
         },
       }),
     }),
@@ -163,11 +158,8 @@ export class UsersController {
       storage: diskStorage({
         destination: join(process.cwd(), 'uploads'),
         filename: (req: any, file: any, cb: any) => {
-          const randomName = new Array(32)
-            .fill(null)
-            .map(() => Math.round(Math.random() * 16).toString(16))
-            .join('');
-          return cb(null, `${randomName}${extname(file.originalname)}`);
+            const randomName = randomBytes(16).toString('hex');
+            return cb(null, `${randomName}${extname(file.originalname)}`);
         },
       }),
     }),

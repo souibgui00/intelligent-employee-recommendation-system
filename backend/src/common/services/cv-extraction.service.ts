@@ -139,16 +139,8 @@ export class CvExtractionService {
 
       // Metadata extraction
       const headerText = sections.header || text.slice(0, 500);
-      const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
-      const emailMatch = emailRegex.exec(headerText);
-      const email = emailMatch
-        ? emailMatch[0]
-        : emailRegex.exec(text)?.[0] ||
-          null;
-
-      const phoneRegex = /\+?[\d\s\-().]{7,}/;
-      const phoneMatch = phoneRegex.exec(text);
-      const telephone = phoneMatch ? phoneMatch[0] : null;
+      const email = this.extractEmail(headerText) || this.extractEmail(text);
+      const telephone = this.extractPhone(text);
 
       // Improved Name Detection from Header
       const headerLines = (sections.header || '')
@@ -191,17 +183,12 @@ export class CvExtractionService {
       );
 
       // Years of experience extraction (improved logic)
-      let yearsOfExperience = 0;
-      const experienceRegex = /(\d+)\s*(?:\+)?\s*(?:years?\s*(?:of\s*)?experience|ans?\s*d.{0,5}expérience)/i;
-      const experienceMatch = experienceRegex.exec(text);
-      if (experienceMatch) {
-        yearsOfExperience = parseInt(experienceMatch[1], 10);
-      } else if (sections.experience) {
+      let yearsOfExperience = this.extractYearsOfExperience(text);
+      if (!yearsOfExperience && sections.experience) {
         // Fallback: estimate from career span if section exists
         // (Simple estimate for first version)
-        const dateMatches = sections.experience.match(/\b(19|20)\d{2}\b/g);
-        if (dateMatches && dateMatches.length >= 2) {
-          const years = dateMatches.map(Number);
+        const years = this.extractYearsFromSection(sections.experience);
+        if (years.length >= 2) {
           yearsOfExperience = Math.max(...years) - Math.min(...years) || 1;
         }
       }
@@ -328,14 +315,218 @@ export class CvExtractionService {
   }
 
   private extractSkillsSection(text: string): string {
-    const skillsSectionRegex =
-      /(?:skills|compétences)\s*:?\s*\n([\s\S]*?)(?=\n(?:experience|education|projects|formation|$)|$)/i;
-    const match = skillsSectionRegex.exec(text);
-    if (match && match[1] && match[1].length > 30) {
-      this.logger.log('Targeting skills section for extraction');
-      return match[1];
+    const lines = text.split('\n');
+    const captured: string[] = [];
+    let isCapturing = false;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      const normalized = trimmed.toLowerCase();
+
+      if (!isCapturing) {
+        if (
+          normalized === 'skills' ||
+          normalized.startsWith('skills:') ||
+          normalized === 'compétences' ||
+          normalized.startsWith('compétences:')
+        ) {
+          isCapturing = true;
+        }
+        continue;
+      }
+
+      if (
+        normalized === 'experience' ||
+        normalized.startsWith('experience:') ||
+        normalized === 'education' ||
+        normalized.startsWith('education:') ||
+        normalized === 'projects' ||
+        normalized.startsWith('projects:') ||
+        normalized === 'formation' ||
+        normalized.startsWith('formation:')
+      ) {
+        break;
+      }
+
+      if (trimmed.length > 0) {
+        captured.push(line);
+      }
     }
+
+    const skillsSection = captured.join('\n').trim();
+    if (skillsSection.length > 30) {
+      this.logger.log('Targeting skills section for extraction');
+      return skillsSection;
+    }
+
     return text;
+  }
+
+  private extractEmail(text: string): string | null {
+    const candidates = text.split(/\s+/);
+
+    for (const candidate of candidates) {
+      const trimmed = candidate.replace(/^[<([{"'`]+|[>)]},;:\"'`]+$/g, '');
+      const atIndex = trimmed.indexOf('@');
+      if (atIndex <= 0 || atIndex !== trimmed.lastIndexOf('@')) continue;
+
+      const localPart = trimmed.slice(0, atIndex);
+      const domainPart = trimmed.slice(atIndex + 1);
+      if (!localPart || !domainPart.includes('.')) continue;
+      if (domainPart.startsWith('.') || domainPart.endsWith('.')) continue;
+      if (localPart.length > 64 || domainPart.length > 255) continue;
+
+      if (this.isEmailPart(localPart) && this.isEmailDomain(domainPart)) {
+        return trimmed;
+      }
+    }
+
+    return null;
+  }
+
+  private extractPhone(text: string): string | null {
+    let current = '';
+
+    const flush = (): string | null => {
+      if (this.countDigits(current) >= 7) {
+        return current.trim();
+      }
+      current = '';
+      return null;
+    };
+
+    for (const char of text) {
+      if (this.isPhoneChar(char)) {
+        current += char;
+        continue;
+      }
+
+      const value = flush();
+      if (value) return value;
+    }
+
+    return flush();
+  }
+
+  private extractYearsOfExperience(text: string): number {
+    const normalized = text.toLowerCase().replace(/[\r\n\t]+/g, ' ');
+    const tokens = normalized.split(' ').filter(Boolean);
+
+    for (let index = 0; index < tokens.length; index += 1) {
+      const token = tokens[index].replace(/[^0-9+]/g, '');
+      if (!token) continue;
+
+      const numericPart = token.endsWith('+') ? token.slice(0, -1) : token;
+      if (!this.isReasonableExperienceNumber(numericPart)) continue;
+
+      const lookAhead = tokens.slice(index + 1, index + 6).join(' ');
+      if (this.containsExperiencePhrase(lookAhead)) {
+        return parseInt(numericPart, 10);
+      }
+    }
+
+    return 0;
+  }
+
+  private extractYearsFromSection(sectionText: string): number[] {
+    const years: number[] = [];
+    let buffer = '';
+
+    const pushBuffer = () => {
+      if (buffer.length === 4) {
+        const prefix = buffer.slice(0, 2);
+        if ((prefix === '19' || prefix === '20') && this.isAllDigits(buffer)) {
+          years.push(parseInt(buffer, 10));
+        }
+      }
+      buffer = '';
+    };
+
+    for (const char of sectionText) {
+      if (char >= '0' && char <= '9') {
+        buffer += char;
+        if (buffer.length > 4) {
+          buffer = char;
+        }
+        continue;
+      }
+
+      pushBuffer();
+    }
+
+    pushBuffer();
+    return years;
+  }
+
+  private containsExperiencePhrase(text: string): boolean {
+    return (
+      text.includes('years of experience') ||
+      text.includes('year of experience') ||
+      text.includes('years experience') ||
+      text.includes('experience') ||
+      text.includes('ans d expérience') ||
+      text.includes('ans dexpérience') ||
+      text.includes('ans experience')
+    );
+  }
+
+  private isPhoneChar(char: string): boolean {
+    return (
+      (char >= '0' && char <= '9') ||
+      char === '+' ||
+      char === ' ' ||
+      char === '-' ||
+      char === '(' ||
+      char === ')' ||
+      char === '.'
+    );
+  }
+
+  private countDigits(text: string): number {
+    let count = 0;
+    for (const char of text) {
+      if (char >= '0' && char <= '9') {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  private isReasonableExperienceNumber(value: string): boolean {
+    if (value.length < 1 || value.length > 2) return false;
+    return this.isAllDigits(value);
+  }
+
+  private isAllDigits(value: string): boolean {
+    if (value.length === 0) return false;
+    for (const char of value) {
+      if (char < '0' || char > '9') return false;
+    }
+    return true;
+  }
+
+  private isEmailPart(value: string): boolean {
+    if (value.length === 0) return false;
+    for (const char of value) {
+      const isLetter =
+        (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z');
+      const isDigit = char >= '0' && char <= '9';
+      const isSymbol = '._%+-'.includes(char);
+      if (!isLetter && !isDigit && !isSymbol) return false;
+    }
+    return true;
+  }
+
+  private isEmailDomain(value: string): boolean {
+    if (value.length === 0) return false;
+    for (const char of value) {
+      const isLetter =
+        (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z');
+      const isDigit = char >= '0' && char <= '9';
+      const isSymbol = '.-'.includes(char);
+      if (!isLetter && !isDigit && !isSymbol) return false;
+    }
+    return true;
   }
 
   private async findSkillsInText(

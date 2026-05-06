@@ -9,6 +9,7 @@ import { Model, Types } from 'mongoose';
 import { User } from './schema/user.schema';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { randomBytes, randomInt } from 'crypto';
 import { Role } from '../common/enums/role.enum';
 import { EmailService } from '../common/services/email.service';
 
@@ -96,7 +97,7 @@ export class UsersService {
 
   private generateMatricule(role: string): string {
     const year = new Date().getFullYear();
-    const randomId = Math.floor(1000 + Math.random() * 9000);
+    const randomId = randomInt(1000, 10000);
     const normalizedRole = (role || 'EMPLOYEE').toUpperCase();
 
     let prefix = 'EMP';
@@ -117,16 +118,13 @@ export class UsersService {
 
     if (!isGoogleUser) {
       // Only generate/hash a password for non-Google users
-      rawPassword = data.password || Math.random().toString(36).slice(-10);
+      rawPassword = data.password || randomBytes(8).toString('base64url');
       const salt = await bcrypt.genSalt(10);
       data.password = await bcrypt.hash(rawPassword!, salt);
     } else {
       // Google users get a random unusable password — they log in via OAuth only
       const salt = await bcrypt.genSalt(10);
-      data.password = await bcrypt.hash(
-        Math.random().toString(36).slice(-16),
-        salt,
-      );
+      data.password = await bcrypt.hash(randomBytes(16).toString('base64url'), salt);
     }
 
     // Set role to enum if provided as string
