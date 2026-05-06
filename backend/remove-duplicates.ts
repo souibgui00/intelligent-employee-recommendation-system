@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
-import { User, UserSchema } from './src/users/schema/user.schema';
+import { UserSchema } from './src/users/schema/user.schema';
 
 dotenv.config();
 
@@ -50,7 +50,6 @@ async function run() {
         return d1 - d2;
       });
 
-      const keep = users[0];
       const duplicates = users.slice(1);
 
       for (const dup of duplicates) {
