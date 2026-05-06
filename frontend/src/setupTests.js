@@ -4,7 +4,7 @@ try {
   // If jest-dom fails to load (aria-query / environment issues), provide
   // small polyfills for the commonly used matchers so tests can proceed.
   // eslint-disable-next-line no-console
-  console.warn('@testing-library/jest-dom failed to load:', e && e.message);
+  console.warn('@testing-library/jest-dom failed to load:', e?.message);
   if (typeof expect !== 'undefined' && typeof expect.extend === 'function') {
     expect.extend({
       toBeInTheDocument(received) {
@@ -27,7 +27,7 @@ try {
 }
 
 // Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(globalThis, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation(query => ({
     matches: false,
@@ -42,25 +42,25 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock ResizeObserver
-global.ResizeObserver = jest.fn().mockImplementation(() => ({
+globalThis.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 }));
 
 // Mock IntersectionObserver
-global.IntersectionObserver = jest.fn().mockImplementation(() => ({
+globalThis.IntersectionObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 }));
 
 // Mock fetch
-global.fetch = jest.fn();
+globalThis.fetch = jest.fn();
 
 // Mock URL.createObjectURL
-global.URL.createObjectURL = jest.fn(() => 'mock-url');
-global.URL.revokeObjectURL = jest.fn();
+globalThis.URL.createObjectURL = jest.fn(() => 'mock-url');
+globalThis.URL.revokeObjectURL = jest.fn();
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -72,7 +72,7 @@ const localStorageMock = (() => {
     clear: jest.fn(() => { store = {}; }),
   };
 })();
-Object.defineProperty(global, 'localStorage', {
+Object.defineProperty(globalThis, 'localStorage', {
   value: localStorageMock,
   writable: true,
 });
@@ -87,7 +87,7 @@ const sessionStorageMock = (() => {
     clear: jest.fn(() => { store = {}; }),
   };
 })();
-Object.defineProperty(global, 'sessionStorage', {
+Object.defineProperty(globalThis, 'sessionStorage', {
   value: sessionStorageMock,
   writable: true,
 });

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { render } from '@testing-library/react';
 import AdminApp from '../../AdminApp';
 import EmployeeApp from '../../EmployeeApp';
@@ -8,12 +9,19 @@ import ManagerApp from '../../ManagerApp';
 const routeCalls = [];
 const mockUseLocation = jest.fn();
 
+// PortalLayout mock with PropTypes
+const PortalLayoutComponent = ({ role, children }) => (
+  <div data-testid="portal-layout" data-role={role}>
+    {children}
+  </div>
+);
+PortalLayoutComponent.propTypes = {
+  role: PropTypes.string.isRequired,
+  children: PropTypes.node.isRequired,
+};
+
 jest.mock('@/components/PortalLayout', () => ({
-  PortalLayout: ({ role, children }) => (
-    <div data-testid="portal-layout" data-role={role}>
-      {children}
-    </div>
-  ),
+  PortalLayout: PortalLayoutComponent,
 }));
 
 jest.mock('@/components/employees/employee-profile-route-page', () => ({
@@ -32,21 +40,45 @@ jest.mock('@/lib/auth-context', () => ({
   useAuth: () => ({ user: null }),
 }));
 
-jest.mock('@/components/ui/badge', () => ({
-  Badge: ({ children }) => <span>{children}</span>,
-}));
+jest.mock('@/components/ui/badge', () => {
+  const BadgeComponent = ({ children }) => <span>{children}</span>;
+  BadgeComponent.propTypes = {
+    children: PropTypes.node.isRequired,
+  };
+  return {
+    Badge: BadgeComponent,
+  };
+});
 
-jest.mock('react-router-dom', () => ({
-  Routes: ({ children }) => <div data-testid="routes">{children}</div>,
-  Route: (props) => {
+jest.mock('react-router-dom', () => {
+  const RoutesComponent = ({ children }) => <div data-testid="routes">{children}</div>;
+  RoutesComponent.propTypes = {
+    children: PropTypes.node.isRequired,
+  };
+
+  const RouteComponent = (props) => {
     routeCalls.push(props);
     return <div data-testid={`route-${props.path || 'index'}`} />;
-  },
-  Navigate: ({ to, replace }) => (
+  };
+  RouteComponent.propTypes = {
+    path: PropTypes.string,
+  };
+
+  const NavigateComponent = ({ to, replace }) => (
     <div data-testid="navigate" data-to={to} data-replace={String(replace)} />
-  ),
-  useLocation: () => mockUseLocation(),
-}));
+  );
+  NavigateComponent.propTypes = {
+    to: PropTypes.string.isRequired,
+    replace: PropTypes.bool,
+  };
+
+  return {
+    Routes: RoutesComponent,
+    Route: RouteComponent,
+    Navigate: NavigateComponent,
+    useLocation: () => mockUseLocation(),
+  };
+});
 
 describe('Role apps routing', () => {
   beforeEach(() => {

@@ -18,12 +18,12 @@ describe('useAuth', () => {
   const mockGet = require('../../services/api').get;
 
   // Get references to the mocked storage (set up in setupTests.js)
-  const getSessionStorage = () => global.sessionStorage;
+  const getSessionStorage = () => globalThis.sessionStorage;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    global.sessionStorage.clear();
-    global.localStorage.clear();
+    globalThis.sessionStorage.clear();
+    globalThis.localStorage.clear();
   });
 
   it('should initialize with null user', () => {
@@ -228,8 +228,9 @@ describe('useAuth', () => {
     await act(async () => {
       try {
         await result.current.refreshToken('invalid-token');
-      } catch (e) {
-        // expected to throw
+      } catch (error) {
+        // expected to throw - exception handled
+        expect(error).toBeDefined();
       }
     });
 
@@ -286,8 +287,9 @@ describe('useAuth', () => {
     await act(async () => {
       try {
         await result.current.fetchUserProfile();
-      } catch (e) {
-        // expected to throw
+      } catch (error) {
+        // expected to throw - exception handled
+        expect(error).toBeDefined();
       }
     });
 

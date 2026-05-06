@@ -40,7 +40,7 @@ describe('api service', () => {
     expect(api.interceptors.request.use).toHaveBeenCalled();
     const interceptorFn = api.interceptors.request.use.mock.calls[0][0];
 
-    global.localStorage.getItem.mockImplementation((key) =>
+    globalThis.localStorage.getItem.mockImplementation((key) =>
       key === 'token' ? 'abc-token' : null,
     );
 
@@ -57,7 +57,7 @@ describe('api service', () => {
     });
 
     const interceptorFn = api.interceptors.request.use.mock.calls[0][0];
-    global.localStorage.getItem.mockReturnValue(null);
+    globalThis.localStorage.getItem.mockReturnValue(null);
 
     const config = { headers: {} };
     const result = interceptorFn(config);

@@ -53,8 +53,8 @@ export function AccessibilityWidget() {
       if (settings.readingGuide) setGuidePosition(e.clientY);
       if (settings.spotlight) setSpotlightPos({ x: e.clientX, y: e.clientY });
     };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    globalThis.addEventListener('mousemove', handleMouseMove);
+    return () => globalThis.removeEventListener('mousemove', handleMouseMove);
   }, [settings.readingGuide, settings.spotlight]);
 
   useEffect(() => {
@@ -62,15 +62,15 @@ export function AccessibilityWidget() {
       if (!settings.screenReader) return;
       let text = e.target.innerText || e.target.ariaLabel || e.target.alt;
       if (text && text.length < 300) {
-        text = text.replace(/[\[\]{}()_]/g, ' ').replace(/\s+/g, ' ').trim();
-        window.speechSynthesis.cancel();
+        text = text.replaceAll(/[\[\]{}()_]/g, ' ').replaceAll(/\s+/g, ' ').trim();
+        globalThis.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'en-US';
-        window.speechSynthesis.speak(utterance);
+        globalThis.speechSynthesis.speak(utterance);
       }
     };
-    window.addEventListener('mouseover', handleMouseOver);
-    return () => window.removeEventListener('mouseover', handleMouseOver);
+    globalThis.addEventListener('mouseover', handleMouseOver);
+    return () => globalThis.removeEventListener('mouseover', handleMouseOver);
   }, [settings.screenReader]);
 
   const toggle = (key) => setSettings(prev => ({ ...prev, [key]: !prev[key] }));
@@ -155,6 +155,8 @@ export function AccessibilityWidget() {
             ].map(tool => (
               <div 
                 key={tool.key}
+                role="button"
+                tabIndex={0}
                 className={cn(
                   "flex items-center justify-between p-4 rounded-[1.5rem] transition-all duration-300 cursor-pointer group/item",
                   settings[tool.key] 
@@ -162,6 +164,12 @@ export function AccessibilityWidget() {
                     : "bg-slate-50 hover:bg-slate-100 text-slate-600 border border-transparent hover:border-orange-200"
                 )}
                 onClick={() => toggle(tool.key)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggle(tool.key);
+                  }
+                }}
               >
                 <div className="flex items-center gap-4">
                   <div className={cn(

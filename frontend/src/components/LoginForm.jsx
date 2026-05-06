@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
 // Safe, linear-time email validation regex
@@ -41,10 +40,10 @@ const LoginForm = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (err) {
-      if (!err.response) {
-        setSubmitError('An error occurred. Please try again');
-      } else {
+      if (err.response) {
         setSubmitError(err.response?.data?.message || 'Login failed');
+      } else {
+        setSubmitError('An error occurred. Please try again');
       }
     } finally {
       setLoading(false);

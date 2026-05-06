@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import api from '../services/api';
 
 const AuthContext = createContext(null);
@@ -18,7 +19,7 @@ export const AuthProvider = ({ children }) => {
         if (parsed) setUser(parsed);
       }
     } catch (e) {
-      // ignore
+      // ignore - exception handled
     }
   }, []);
 
@@ -29,7 +30,7 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       const res = await api.post('/auth/login', { email, password });
-      if (!res || !res.data) throw new Error('Login failed');
+      if (!res?.data) throw new Error('Login failed');
       const userData = res.data.user;
       const token = res.data.access_token;
       setUser(userData);
@@ -62,7 +63,7 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       const res = await api.post('/auth/register', userData);
-      if (!res || !res.data) throw new Error('Registration failed');
+      if (!res?.data) throw new Error('Registration failed');
       const newUser = res.data.user;
       const token = res.data.access_token;
       if (newUser) {
@@ -86,7 +87,7 @@ export const AuthProvider = ({ children }) => {
   const refreshToken = async (token) => {
     try {
       const res = await api.post('/auth/refresh', { refreshToken: token });
-      if (!res || !res.data) throw new Error('Refresh failed');
+      if (!res?.data) throw new Error('Refresh failed');
       sessionStorage.setItem('access_token', res.data.access_token);
       if (res.data.refresh_token) {
         sessionStorage.setItem('refresh_token', res.data.refresh_token);
@@ -101,7 +102,7 @@ export const AuthProvider = ({ children }) => {
   const fetchUserProfile = async () => {
     try {
       const res = await api.get('/auth/profile');
-      if (!res || !res.data) throw new Error('Failed to fetch profile');
+      if (!res?.data) throw new Error('Failed to fetch profile');
       setUser(res.data);
       return res.data;
     } catch (err) {
@@ -123,12 +124,14 @@ export const AuthProvider = ({ children }) => {
     return user.role === role;
   };
 
+  const contextValue = useMemo(() => ({
+    user, setUser, loading, error, isAuthenticated,
+    login, logout, register, refreshToken,
+    fetchUserProfile, updateUserProfile, clearError, hasRole,
+  }), [user, loading, error, isAuthenticated]);
+
   return (
-    <AuthContext.Provider value={{
-      user, setUser, loading, error, isAuthenticated,
-      login, logout, register, refreshToken,
-      fetchUserProfile, updateUserProfile, clearError, hasRole,
-    }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
@@ -141,3 +144,7 @@ export const useAuth = () => {
 };
 
 export default AuthContext;
+
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
