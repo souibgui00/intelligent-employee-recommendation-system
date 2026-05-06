@@ -190,7 +190,7 @@ export function AccessibilityWidget() {
                 {settings[tool.key] && (
                   <Lucide.Check className="w-5 h-5 text-white stroke-[4px] animate-in zoom-in duration-300" />
                 )}
-              </div>
+              </button>
             ))}
 
             {/* Font Size Scaling */}
@@ -237,6 +237,3 @@ export function AccessibilityWidget() {
     </>
   );
 }
-
-              </button>
-        </div>
